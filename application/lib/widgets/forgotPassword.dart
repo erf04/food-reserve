@@ -32,7 +32,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         this.showCode = true;
         myEmail = email;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Code sent to email!')),
+          SnackBar(content: Text('Code sent to email')),
         );
       });
     }).catchError((onError) {
@@ -59,8 +59,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         showCode = false;
         correctPass = false;
         myEmail = '';
+        codeController.text = '';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Wrong information please try again!')),
+          SnackBar(content: Text('Wrong information please try again')),
         );
       });
     });
@@ -75,7 +76,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       });
     }).catchError((onError) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Password is too weak.Try again!')),
+        SnackBar(content: Text('Password is too weak.Try again')),
       );
     });
   }
@@ -146,24 +147,33 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: <Widget>[
                             Text(
-                              'Enter your email to reset password',
+                              showCode
+                                  ? 'Enter the emailed code'
+                                  : correctPass
+                                      ? 'Enter your new password'
+                                      : 'Enter your email to reset password',
                               style: TextStyle(fontSize: 18.sp),
                               textAlign: TextAlign.center,
                             ),
                             SizedBox(height: 20.h),
-                            TextField(
-                              controller: _emailController,
-                              keyboardType: TextInputType.emailAddress,
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                labelText: 'Email',
-                              ),
-                            ),
+                            showCode
+                                ? SizedBox()
+                                : TextField(
+                                    controller: _emailController,
+                                    keyboardType: TextInputType.emailAddress,
+                                    decoration: InputDecoration(
+                                      border: OutlineInputBorder(),
+                                      labelText: 'Email',
+                                    ),
+                                  ),
                             showCode
                                 ? TextField(
                                     controller: codeController,
+                                    keyboardType: TextInputType.number,
                                     decoration: InputDecoration(
-                                        label: Text('Enter the code')),
+                                      label: Text('Enter the code'),
+                                      border: OutlineInputBorder(),
+                                    ),
                                   )
                                 : correctPass
                                     ? Column(
@@ -171,14 +181,19 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                           TextField(
                                             controller: controller1,
                                             decoration: InputDecoration(
-                                                label: Text(
-                                                    'Enter your new password')),
+                                              label: Text(
+                                                'Enter your new password',
+                                              ),
+                                              border: OutlineInputBorder(),
+                                            ),
                                           ),
                                           TextField(
                                             controller: controller2,
                                             decoration: InputDecoration(
-                                                label: Text(
-                                                    'Confirm your password')),
+                                              label:
+                                                  Text('Confirm your password'),
+                                              border: OutlineInputBorder(),
+                                            ),
                                           )
                                         ],
                                       )
@@ -196,7 +211,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                           content: Text(
-                                              'Password and Confirm Password are not the same!')),
+                                              'Password and Confirm Password are not the same')),
                                     );
                                   }
                                 } else {
