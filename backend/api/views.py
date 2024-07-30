@@ -569,7 +569,7 @@ def filter_reservations(request_data:dict):
         Q(user__first_name__icontains=user_search) |
         Q(user__last_name__icontains=user_search) |
         Q(user__username__icontains=user_search) | 
-        Q(user__first_name__icontains=user_search.split()[0] if user_search!='' else user_search) &
+        Q(user__first_name__icontains=user_search.split()[0] if not (user_search.isspace() or user_search=='') else user_search) &
         Q(user__last_name__icontains=' '.join(user_search.split()[1:] if user_search!='' else user_search))
     ).filter(
         shift_meal__shift__shift_name=shift_search,
