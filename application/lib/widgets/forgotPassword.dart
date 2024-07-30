@@ -4,6 +4,7 @@ import 'package:application/widgets/loginSignUp_state.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -32,13 +33,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         this.showCode = true;
         myEmail = email;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Code sent to email')),
+          SnackBar(content: Text('کد ارسال شد.')),
         );
       });
     }).catchError((onError) {
       setState(() {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Incorrect email address')),
+          SnackBar(content: Text('ایمیل وارد شده اشتباه است!')),
         );
       });
     });
@@ -54,7 +55,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         correctPass = true;
         showCode = false;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Write down your new password!')),
+          SnackBar(content: Text('پسورد جدید خود را وارد کنید.')),
         );
       });
     }).catchError((onError) {
@@ -64,7 +65,8 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         myEmail = '';
         codeController.text = '';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Wrong information please try again')),
+          SnackBar(
+              content: Text('اطلاعات وارد شده اشتباه است. دوباره تلاش کنید!')),
         );
       });
     });
@@ -73,13 +75,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   Future<void> sendPass(String password) async {
     final response = await HttpClient.instance.post(
         'api/password/reset/confirm/',
+        options: Options(headers: {'App-Token': dotenv.env['API_KEY']}),
         data: {'email': myEmail, 'new_password': password}).then((onValue) {
       setState(() {
         success = true;
       });
     }).catchError((onError) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Password is too weak.Try again')),
+        SnackBar(content: Text('پسورد ورودی ضعیف است. ')),
       );
     });
   }
@@ -119,9 +122,9 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       body: SafeArea(
         child: success
             ? AlertDialog(
-                title: const Text('Successfuly reseted'),
+                title: const Text('موفقیت آمیز بود'),
                 content: Text(
-                  "Click ok to resume!",
+                  "برای ادامه کلیک کنید!",
                   style: Theme.of(context).textTheme.bodyLarge,
                 ),
                 actions: <Widget>[
@@ -159,9 +162,13 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                               textAlign: TextAlign.center,
                             ),
                             SizedBox(height: 20.h),
-                            showCode
+                            showCode || correctPass
                                 ? SizedBox()
                                 : TextField(
+                                    inputFormatters: [
+                                      FilteringTextInputFormatter.allow(
+                                          RegExp(r'[a-zA-Z0-9@._-]')),
+                                    ],
                                     controller: _emailController,
                                     keyboardType: TextInputType.emailAddress,
                                     decoration: InputDecoration(
@@ -182,6 +189,10 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                     ? Column(
                                         children: [
                                           TextField(
+                                            inputFormatters: [
+                                              FilteringTextInputFormatter.allow(
+                                                  RegExp(r'[a-zA-Z0-9@._-]')),
+                                            ],
                                             controller: controller1,
                                             decoration: InputDecoration(
                                               label: Text(
@@ -190,7 +201,14 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                               border: OutlineInputBorder(),
                                             ),
                                           ),
+                                          SizedBox(
+                                            height: 15,
+                                          ),
                                           TextField(
+                                            inputFormatters: [
+                                              FilteringTextInputFormatter.allow(
+                                                  RegExp(r'[a-zA-Z0-9@._-]')),
+                                            ],
                                             controller: controller2,
                                             decoration: InputDecoration(
                                               label:
@@ -210,11 +228,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                                   });
                                 } else if (correctPass) {
                                   if (controller1.text == controller2.text) {
+                                    sendPass(controller1.text);
                                   } else {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                           content: Text(
-                                              'Password and Confirm Password are not the same')),
+                                              'پسورد و تاییدیه ی آن یکی نیستند')),
                                     );
                                   }
                                 } else {

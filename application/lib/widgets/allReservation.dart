@@ -13,6 +13,7 @@ import 'package:choice/choice.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
 import 'package:persian_datetime_picker/persian_datetime_picker.dart';
 
@@ -223,6 +224,7 @@ class _MealReservationsPageState extends State<MealReservationsPage> {
                         children: [
                           Expanded(
                             child: TextFormField(
+
                               decoration:
                                   InputDecoration(labelText: 'انتخاب تاریخ'),
                               readOnly: true,
@@ -245,6 +247,9 @@ class _MealReservationsPageState extends State<MealReservationsPage> {
                     Padding(
                       padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
                       child: TextField(
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-\s]')),
+                        ],
                         controller: searchController,
                         decoration: InputDecoration(
                           labelText: 'جستجو با اسم',
@@ -267,9 +272,9 @@ class _MealReservationsPageState extends State<MealReservationsPage> {
                             return SingleChildScrollView(
                               child: DataTable(
                                 columns: [
-                                  DataColumn(label: Text('Full Name')),
-                                  DataColumn(label: Text('Lunch')),
-                                  DataColumn(label: Text('Dinner')),
+                                  DataColumn(label: Text('نام و نام خانوادگی')),
+                                  DataColumn(label: Text('ناهار')),
+                                  DataColumn(label: Text('شام')),
                                 ],
                                 rows: snapshot.data!.map((reservation) {
                                   return DataRow(

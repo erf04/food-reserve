@@ -8,6 +8,24 @@ import 'package:application/widgets/forgotPassword.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/services.dart';
+
+class EnglishInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    // Regular expression for English characters (letters, numbers, and some punctuation)
+    final RegExp regExp = RegExp(r'^[a-zA-Z0-9\s\.,?!]*$');
+
+    // Check if the new value matches the regular expression
+    if (regExp.hasMatch(newValue.text)) {
+      return newValue;
+    }
+
+    // If not, return the old value
+    return oldValue;
+  }
+}
 
 class LoginSignUp extends StatefulWidget {
   const LoginSignUp({super.key});
@@ -155,6 +173,9 @@ class _LoginSignUpState extends State<LoginSignUp> {
             controller: myController1,
             enableSuggestions: true,
             autocorrect: true,
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+            ],
             decoration: const InputDecoration(
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(16)),
@@ -169,6 +190,9 @@ class _LoginSignUpState extends State<LoginSignUp> {
             height: 20,
           ),
           TextField(
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+            ],
             controller: myController2,
             enableSuggestions: false,
             autocorrect: false,
@@ -321,6 +345,9 @@ class _LoginSignUpState extends State<LoginSignUp> {
             controller: myController1,
             enableSuggestions: true,
             autocorrect: true,
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+            ],
             decoration: const InputDecoration(
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(16)),
@@ -335,6 +362,9 @@ class _LoginSignUpState extends State<LoginSignUp> {
             height: 20,
           ),
           TextField(
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+            ],
             controller: myController4,
             enableSuggestions: true,
             autocorrect: true,
@@ -352,6 +382,9 @@ class _LoginSignUpState extends State<LoginSignUp> {
             height: 20,
           ),
           TextField(
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+            ],
             controller: myController5,
             enableSuggestions: true,
             autocorrect: true,
@@ -369,6 +402,9 @@ class _LoginSignUpState extends State<LoginSignUp> {
             height: 20,
           ),
           TextField(
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+            ],
             controller: myController6,
             enableSuggestions: true,
             autocorrect: true,
@@ -386,6 +422,9 @@ class _LoginSignUpState extends State<LoginSignUp> {
             height: 20,
           ),
           TextField(
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+            ],
             controller: myController2,
             enableSuggestions: false,
             autocorrect: false,
@@ -415,6 +454,9 @@ class _LoginSignUpState extends State<LoginSignUp> {
             height: 20,
           ),
           TextField(
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+            ],
             controller: myController3,
             enableSuggestions: false,
             autocorrect: false,
