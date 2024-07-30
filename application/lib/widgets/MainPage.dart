@@ -44,7 +44,7 @@ class _MainPageState extends State<MainPage> {
       String? myAccess = await TokenManager.getAccessToken();
       final response = await HttpClient.instance.get("api/pending-list/",
           options: Options(headers: {"Authorization": "JWT $myAccess"}));
-      print(response.data);
+
       List<Reserve> myList = [];
       for (var j in response.data) {
         var i = j["shift_meal"];
@@ -52,7 +52,7 @@ class _MainPageState extends State<MainPage> {
             id: i["meal"]["food"]["id"],
             name: i["meal"]["food"]["name"],
             type: i["meal"]["food"]["type"]);
-        //print('moz1');
+
         Food? diet;
         if (i["meal"]["diet"] == null) {
           diet = null;
@@ -62,7 +62,7 @@ class _MainPageState extends State<MainPage> {
               name: i["meal"]["diet"]["name"],
               type: i["meal"]["diet"]["type"]);
         }
-        //print('moz2');
+
         Food? dessert;
         if (i["meal"]["dessert"] == null) {
           dessert = null;
@@ -72,12 +72,12 @@ class _MainPageState extends State<MainPage> {
               name: i["meal"]["dessert"]["name"],
               type: i["meal"]["dessert"]["type"]);
         }
-        //print('moz3');
+
         List<Drink> myDrinks = [];
         for (var j in i["meal"]["drinks"]) {
           myDrinks.add(Drink(name: j["name"], id: j['id']));
         }
-        //print('moz4');
+
         Meal myMeal = Meal(
             id: i["meal"]["id"],
             drink: myDrinks,
@@ -85,7 +85,7 @@ class _MainPageState extends State<MainPage> {
             diet: diet,
             desert: dessert,
             dailyMeal: i["meal"]["daily_meal"]);
-        print('moz5');
+
         Shift myShift =
             Shift(id: i["shift"]["id"], shiftName: i["shift"]["shift_name"]);
         ShiftMeal temp1 = ShiftMeal(
@@ -111,7 +111,7 @@ class _MainPageState extends State<MainPage> {
     VerifyToken? myVerify = await TokenManager.verifyAccess(context);
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
-      //print(myAccess);
+
       final response = await HttpClient.instance.get("api/profile/",
           options: Options(headers: {"Authorization": "JWT $myAccess"}));
       User myUser = User.fromJson(response.data);
@@ -141,7 +141,7 @@ class _MainPageState extends State<MainPage> {
                     color: Color.fromARGB(255, 2, 16, 43),
                   )),
               Text(
-                'Main Page',
+                'صفحه اصلی',
                 style: Theme.of(context)
                     .textTheme
                     .bodyMedium!
@@ -222,9 +222,9 @@ class _MainPageState extends State<MainPage> {
                     } else if (snapshot.hasError) {
                       return Center(
                         child: AlertDialog(
-                          title: const Text('Can\'t connect!'),
+                          title: const Text('مشکل اینترنت'),
                           content: Text(
-                            "Something went wrong while connecting to the server!",
+                            "به نظر می رسد مشکلی رخ داده است. دوباره تلاش کنید!",
                             style: Theme.of(context).textTheme.bodyLarge,
                           ),
                           actions: <Widget>[
@@ -237,7 +237,7 @@ class _MainPageState extends State<MainPage> {
                                       getProfileForMainPage();
                                     });
                                   },
-                                  child: Text('Try Again!'),
+                                  child: Text('تلاش دوباره!'),
                                 ),
                                 TextButton(
                                   onPressed: () {
@@ -249,7 +249,7 @@ class _MainPageState extends State<MainPage> {
                                       ));
                                     });
                                   },
-                                  child: Text('Go back!'),
+                                  child: Text('بازگشت'),
                                 ),
                               ],
                             ),
@@ -301,7 +301,6 @@ class _MainPageState extends State<MainPage> {
                               children: [
                                 InkWell(
                                   onTap: () {
-                                    print(snapshot.data!.isSuperVisor);
                                     if (snapshot.data!.isSuperVisor) {
                                       FadePageRoute.navigateToNextPage(
                                           context, MealCreationPage());
@@ -338,7 +337,6 @@ class _MainPageState extends State<MainPage> {
                                 const SizedBox(),
                                 InkWell(
                                   onTap: () {
-                                    print(snapshot.data!.isSuperVisor);
                                     if (snapshot.data!.isSuperVisor) {
                                       FadePageRoute.navigateToNextPage(
                                           context, MealReservationsPage());
@@ -423,9 +421,9 @@ class _MainPageState extends State<MainPage> {
                           onErrorCreate
                               ? Center(
                                   child: AlertDialog(
-                                    title: const Text('No access!'),
+                                    title: const Text('خطا'),
                                     content: Text(
-                                      "You don't have permission to visit this page!",
+                                      "شما اجازه ی ورود به این صفحه را ندارید!",
                                       style:
                                           Theme.of(context).textTheme.bodyLarge,
                                     ),
@@ -440,7 +438,7 @@ class _MainPageState extends State<MainPage> {
                                                 onErrorCreate = false;
                                               });
                                             },
-                                            child: const Text('Try Again!'),
+                                            child: const Text('تلاش دوباره!'),
                                           ),
                                         ],
                                       ),
@@ -458,9 +456,9 @@ class _MainPageState extends State<MainPage> {
                                     } else if (snapshot.hasError) {
                                       return Center(
                                         child: AlertDialog(
-                                          title: const Text('Poor Connection!'),
+                                          title: const Text('مشکل اینترنت'),
                                           content: Text(
-                                            "Something went wrong while connecting to the server!",
+                                            "به نظر می رسد مشکلی رخ داده است. دوباره تلاش کنید!",
                                             style: Theme.of(context)
                                                 .textTheme
                                                 .bodyLarge,
@@ -477,8 +475,8 @@ class _MainPageState extends State<MainPage> {
                                                       getPendingReservations();
                                                     });
                                                   },
-                                                  child:
-                                                      const Text('Try Again!'),
+                                                  child: const Text(
+                                                      'تلاش دوباره!'),
                                                 ),
                                               ],
                                             ),
@@ -495,7 +493,6 @@ class _MainPageState extends State<MainPage> {
                                         child: ListView.builder(
                                             itemCount: snapshot.data!.length,
                                             itemBuilder: (context, index) {
-                                              //print(snapshot.data![index]);
                                               return Padding(
                                                 padding:
                                                     const EdgeInsets.all(16.0),
@@ -588,7 +585,7 @@ class _MainPageState extends State<MainPage> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        Text('Shift : ${reserves[index].shiftMeal.shift.shiftName}',
+        Text('شیفت : ${reserves[index].shiftMeal.shift.shiftName} ',
             style:
                 Theme.of(context).textTheme.bodyLarge!.copyWith(fontSize: 19)),
         Text(
@@ -634,36 +631,89 @@ class _MainPageState extends State<MainPage> {
                     });
                   },
                   child: Text(
-                    'Shift : ${reserves[index].shiftMeal.shift.shiftName}',
+                    'شیفت : ${reserves[index].shiftMeal.shift.shiftName} ',
                     style: Theme.of(context)
                         .textTheme
                         .titleLarge!
                         .copyWith(fontSize: 24, fontWeight: FontWeight.bold),
                   )),
-              TextButton(
-                  onPressed: () {},
-                  child: Text(
-                      'foods: ${reserves[index].shiftMeal.meal.food.name}',
-                      style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                          fontSize: 19, fontWeight: FontWeight.w300))),
-              const SizedBox(
-                height: 6,
+              Text(
+                  'غذا : ${reserves[index].shiftMeal.meal.food.name} ',
+                  style: Theme.of(context).textTheme.titleLarge!.copyWith(
+                      fontSize: 19, fontWeight: FontWeight.w300)),
+
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  SizedBox(width: MediaQuery.of(context).size.width /9,),
+                  Container(
+                    padding: EdgeInsets.fromLTRB(
+                        MediaQuery.of(context).size.width * 1 / 8, 0, 0, 0),
+                    width: MediaQuery.of(context).size.width * 5/8,
+                    height: 30,
+                    child: ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: reserves[index].shiftMeal.meal.drink.length + 1,
+                        scrollDirection: Axis.horizontal,
+                        itemBuilder: (context, index1) {
+                          if (index1 == 0) {
+                            String emptyString = 'نوشیدنی ها : ';
+                            String myString = 'نوشیدنی موجود نمی باشد !';
+                            
+                            return Container(
+                                margin: const EdgeInsets.fromLTRB(4, 2, 4, 2),
+                                child: Text(reserves[index].shiftMeal.meal.drink.isEmpty ? myString : emptyString,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge!
+                                        .copyWith(
+                                            fontSize: 19,
+                                            fontWeight: FontWeight.w300)));
+                          }
+                          if (index1 == reserves[index].shiftMeal.meal.drink.length) {
+                            return Container(
+                                margin: const EdgeInsets.fromLTRB(4, 2, 4, 2),
+                                child: Text(
+                                    reserves[index].shiftMeal
+                                        .meal
+                                        .drink[index1 - 1]
+                                        .name,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge!
+                                        .copyWith(
+                                            fontSize: 19,
+                                            fontWeight: FontWeight.w300)));
+                          } else {
+                            return Container(
+                                margin: const EdgeInsets.fromLTRB(4, 2, 4, 2),
+                                child: Text(
+                                    '${reserves[index].shiftMeal.meal.drink[index1 - 1].name} -',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge!
+                                        .copyWith(
+                                            fontSize: 19,
+                                            fontWeight: FontWeight.w300)));
+                          }
+                        }),
+                  ),
+                  
+                ],
               ),
               Text(
                   reserves[index].shiftMeal.meal.diet == null
-                      ? 'diet: no diet food available'
-                      : 'diet: ${reserves[index].shiftMeal.meal.diet!.name}',
+                      ? 'رژیمی : غذای رژیمی موجود نیست'
+                      : 'رژیمی : ${reserves[index].shiftMeal.meal.diet!.name} ',
                   style: Theme.of(context)
                       .textTheme
                       .titleLarge!
                       .copyWith(fontSize: 19, fontWeight: FontWeight.w300)),
-              const SizedBox(
-                height: 8,
-              ),
+
               Text(
                   reserves[index].shiftMeal.meal.desert == null
-                      ? 'dessert: no dessert food available'
-                      : 'dessert: ${reserves[index].shiftMeal.meal.desert!.name}',
+                      ? 'دسر : دسر موجود نیست'
+                      : 'دسر : ${reserves[index].shiftMeal.meal.desert!.name}',
                   style: Theme.of(context)
                       .textTheme
                       .titleLarge!

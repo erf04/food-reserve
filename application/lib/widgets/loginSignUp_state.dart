@@ -4,6 +4,7 @@ import 'package:application/repository/HttpClient.dart';
 import 'package:application/repository/tokenManager.dart';
 import 'package:application/widgets/MainPage.dart';
 import 'package:application/widgets/SoftenPageTransition.dart';
+import 'package:application/widgets/forgotPassword.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -29,8 +30,8 @@ class _LoginSignUpState extends State<LoginSignUp> {
   TextEditingController myController6 = TextEditingController();
   static Future<bool> getAuthLogin(
       String myUser, String myPass, context) async {
-    final response = await HttpClient.instance.post('api/login/',
-        data: {'username': myUser, 'password': myPass});
+    final response = await HttpClient.instance
+        .post('api/login/', data: {'username': myUser, 'password': myPass});
     if (response.statusCode == 200) {
       TokenManager.saveTokens(
           response.data["access"], response.data["refresh"]);
@@ -64,7 +65,6 @@ class _LoginSignUpState extends State<LoginSignUp> {
       _LoginSignUpState.getAuthLogin(myUser, myPass, context);
       return false;
     } else {
-      
       return true;
     }
   }
@@ -124,7 +124,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
                 });
               },
               child: Text(
-                "Login",
+                "ورود",
                 style: Theme.of(context).textTheme.bodySmall!.copyWith(
                     fontWeight: FontWeight.bold,
                     fontSize: 32,
@@ -138,7 +138,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
                 });
               },
               child: Text(
-                "Sign up",
+                "ثبت نام",
                 style: Theme.of(context).textTheme.bodySmall!.copyWith(
                     fontWeight: FontWeight.bold,
                     fontSize: 32,
@@ -163,7 +163,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
                 contentPadding:
                     EdgeInsets.symmetric(vertical: 10.0, horizontal: 10),
                 filled: true,
-                label: Text('username')),
+                label: Text('نام کاربری')),
           ),
           const SizedBox(
             height: 20,
@@ -187,12 +187,12 @@ class _LoginSignUpState extends State<LoginSignUp> {
                         obscurity = !obscurity;
                       });
                     },
-                    child: Text(obscurity ? 'show' : 'hide',
+                    child: Text(obscurity ? 'نمایش' : 'پنهان',
                         style: Theme.of(context).textTheme.titleLarge!.copyWith(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
                             color: Colors.blueGrey))),
-                label: const Text('Password')),
+                label: const Text('پسورد')),
           ),
           const SizedBox(
             height: 20,
@@ -200,7 +200,11 @@ class _LoginSignUpState extends State<LoginSignUp> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("No account yet?"),
+              Text("آیا اکانت دارید؟",
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium!
+                      .copyWith(fontSize: 15)),
               TextButton(
                   onPressed: () {
                     setState(() {
@@ -208,30 +212,35 @@ class _LoginSignUpState extends State<LoginSignUp> {
                     });
                   },
                   child: Text(
-                    "register now",
+                    "ثبت نام کنید",
                     style: Theme.of(context)
                         .textTheme
                         .bodyMedium!
-                        .copyWith(color: Colors.blueGrey),
+                        .copyWith(color: Colors.blueGrey, fontSize: 15),
                   ))
             ],
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("Forgot your password?"),
+              Text(
+                "فراموشی پسورد؟",
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium!
+                    .copyWith(fontSize: 15),
+              ),
               TextButton(
                   onPressed: () {
-                    setState(() {
-                      isInSignUp = true;
-                    });
+                    FadePageRoute.navigateToNextPage(
+                        context, ForgotPasswordPage());
                   },
                   child: Text(
-                    "click here",
+                    "کلیک کنید",
                     style: Theme.of(context)
                         .textTheme
                         .bodyMedium!
-                        .copyWith(color: Colors.blueGrey),
+                        .copyWith(color: Colors.blueGrey, fontSize: 15),
                   ))
             ],
           ),
@@ -252,7 +261,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
                   backgroundColor: Colors.black26,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16))),
-              child: Text("Submit",
+              child: Text("تایید",
                   style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                       fontSize: 20,
                       fontWeight: FontWeight.w500,
@@ -281,7 +290,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
                 });
               },
               child: Text(
-                "Login",
+                "ورود",
                 style: Theme.of(context).textTheme.bodySmall!.copyWith(
                     fontWeight: FontWeight.bold,
                     fontSize: 32,
@@ -295,7 +304,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
                 });
               },
               child: Text(
-                "Sign up",
+                "ثبت نام",
                 style: Theme.of(context).textTheme.bodySmall!.copyWith(
                     fontWeight: FontWeight.bold,
                     fontSize: 32,
@@ -320,7 +329,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
                 contentPadding:
                     EdgeInsets.symmetric(vertical: 10.0, horizontal: 10),
                 filled: true,
-                label: Text('username')),
+                label: Text('نام کاربری')),
           ),
           const SizedBox(
             height: 20,
@@ -337,7 +346,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
                 contentPadding:
                     EdgeInsets.symmetric(vertical: 10.0, horizontal: 10),
                 filled: true,
-                label: Text('first name')),
+                label: Text('نام')),
           ),
           const SizedBox(
             height: 20,
@@ -354,7 +363,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
                 contentPadding:
                     EdgeInsets.symmetric(vertical: 10.0, horizontal: 10),
                 filled: true,
-                label: Text('last name')),
+                label: Text('نام خانوادگی')),
           ),
           const SizedBox(
             height: 20,
@@ -371,7 +380,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
                 contentPadding:
                     EdgeInsets.symmetric(vertical: 10.0, horizontal: 10),
                 filled: true,
-                label: Text('email')),
+                label: Text('ایمیل')),
           ),
           const SizedBox(
             height: 20,
@@ -395,12 +404,12 @@ class _LoginSignUpState extends State<LoginSignUp> {
                         obscurity = !obscurity;
                       });
                     },
-                    child: Text(obscurity ? 'show' : 'hide',
+                    child: Text(obscurity ? 'نمایش' : 'پنهان',
                         style: Theme.of(context).textTheme.titleLarge!.copyWith(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
                             color: Colors.blueGrey))),
-                label: const Text('Password')),
+                label: const Text('پسورد')),
           ),
           const SizedBox(
             height: 20,
@@ -424,12 +433,12 @@ class _LoginSignUpState extends State<LoginSignUp> {
                         obscurity = !obscurity;
                       });
                     },
-                    child: Text(obscurity ? 'show' : 'hide',
+                    child: Text(obscurity ? 'نمایش' : 'پنهان',
                         style: Theme.of(context).textTheme.titleLarge!.copyWith(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
                             color: Colors.blueGrey))),
-                label: const Text('Confirm Password')),
+                label: const Text('تایید پسورد')),
           ),
           const SizedBox(
             height: 30,
@@ -455,7 +464,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
                   backgroundColor: Colors.black26,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16))),
-              child: Text("Submit",
+              child: Text("تایید",
                   style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                       fontSize: 20,
                       fontWeight: FontWeight.w500,

@@ -52,7 +52,6 @@ class _MealReservationsPageState extends State<MealReservationsPage> {
     VerifyToken? myVerify = await TokenManager.verifyAccess(context);
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
-      print(searchController.text);
       String myDate =
           selectedDate!.formatCompactDate().replaceAll('/', '-').trim();
       final response = await HttpClient.instance.post('api/reservations/all/',
@@ -71,6 +70,14 @@ class _MealReservationsPageState extends State<MealReservationsPage> {
           if (!ids.contains(myUserMeal.user.id)) {
             userMeals.add(myUserMeal);
             ids.add(myUserMeal.user.id);
+          } else {
+            int index = ids.indexOf(myUserMeal.user.id);
+            if (userMeals[index].dinner == null && myUserMeal.dinner != null) {
+              userMeals[index].dinner = myUserMeal.dinner;
+            } else if (userMeals[index].lunch == null &&
+                myUserMeal.lunch != null) {
+              userMeals[index].lunch = myUserMeal.lunch;
+            }
           }
         }
         return userMeals;
@@ -95,7 +102,7 @@ class _MealReservationsPageState extends State<MealReservationsPage> {
     VerifyToken? myVerify = await TokenManager.verifyAccess(context);
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
-      //print(myAccess);
+    
       final response = await HttpClient.instance.get("api/profile/",
           options: Options(headers: {"Authorization": "JWT $myAccess"}));
       User myUser = User.fromJson(response.data);
@@ -310,8 +317,8 @@ class _MealReservationsPageState extends State<MealReservationsPage> {
 
 class UserMeal {
   final User user;
-  final ShiftMeal? lunch;
-  final ShiftMeal? dinner;
+  ShiftMeal? lunch;
+  ShiftMeal? dinner;
 
   UserMeal({
     required this.user,

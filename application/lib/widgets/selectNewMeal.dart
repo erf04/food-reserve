@@ -58,7 +58,7 @@ class _MealSelectionPageState extends State<MealSelectionPage> {
       String? myAccess = await TokenManager.getAccessToken();
       final response = await HttpClient.instance.get('api/meal/create/',
           options: Options(headers: {'Authorization': 'JWT $myAccess'}));
-      print(response.data);
+      
       if (response.statusCode == 200) {
         setState(() {
           for (var i in response.data['foods']) {
@@ -90,7 +90,7 @@ class _MealSelectionPageState extends State<MealSelectionPage> {
     VerifyToken? myVerify = await TokenManager.verifyAccess(context);
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
-      //print(myAccess);
+      
       final response = await HttpClient.instance.get("api/profile/",
           options: Options(headers: {"Authorization": "JWT $myAccess"}));
       User myUser = User.fromJson(response.data);

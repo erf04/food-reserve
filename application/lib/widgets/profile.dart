@@ -30,10 +30,10 @@ class _ProfileState extends State<Profile> {
     VerifyToken? myVerify = await TokenManager.verifyAccess(context);
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
-      print(myAccess);
+
       final response = await HttpClient.instance.get("api/get-reservations/",
           options: Options(headers: {"Authorization": "JWT $myAccess"}));
-      print(response.data);
+
       List<ShiftMeal> myList = [];
       for (var i in response.data) {
         Food food1 = Food(
@@ -78,7 +78,7 @@ class _ProfileState extends State<Profile> {
             meal: myMeal,
             shift: myShift,
             isReserved: true);
-        print("Success");
+
         myList.add(temp);
       }
       return myList;
@@ -90,7 +90,7 @@ class _ProfileState extends State<Profile> {
     VerifyToken? myVerify = await TokenManager.verifyAccess(context);
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
-      print(myAccess);
+
       final response = await HttpClient.instance.get("api/profile/",
           options: Options(headers: {"Authorization": "JWT $myAccess"}));
       User myUser = User.fromJson(response.data);
@@ -523,8 +523,7 @@ class _ReserveHistoryState extends State<ReserveHistory> {
                         ConnectionState.waiting) {
                       return Center(child: const CircularProgressIndicator());
                     } else if (snapshot.hasData) {
-                      //print("HAYAAAAAAAAAAAAAaaa");
-                      //print(snapshot.data!.length);
+
                       if (snapshot.data!.isEmpty) {
                         return Container(
                           color: Colors.white60,
@@ -540,7 +539,7 @@ class _ReserveHistoryState extends State<ReserveHistory> {
                           child: ListView.builder(
                               itemCount: snapshot.data!.length,
                               itemBuilder: (context, index) {
-                                //print(snapshot.data![index]);
+                               
                                 return Padding(
                                   padding: const EdgeInsets.all(16.0),
                                   child: InkWell(

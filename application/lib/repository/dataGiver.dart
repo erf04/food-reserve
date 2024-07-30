@@ -1,6 +1,7 @@
 import 'package:application/main.dart';
 import 'package:application/repository/HttpClient.dart';
 import 'package:application/repository/tokenManager.dart';
+import 'package:application/widgets/MainPage.dart';
 import 'package:flutter/material.dart';
 
 class PostData {
@@ -13,7 +14,7 @@ class PostData {
     if (response.statusCode == 200) {
       TokenManager.saveTokens(response.data["access"], response.data["refresh"]);
       Navigator.of(context).pushReplacement(
-          MaterialPageRoute(builder: (context) => const MyHomePage(title: '',)));
+          MaterialPageRoute(builder: (context) =>MainPage()));
     } else {}
   }
 

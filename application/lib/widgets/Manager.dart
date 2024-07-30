@@ -75,8 +75,7 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
 
     final fromDateIso = fromDate!.toJalaliDateTime().substring(0, 10);
     final toDateIso = toDate!.toJalaliDateTime().substring(0, 10);
-    print(fromDateIso);
-    print(toDateIso);
+
 
     VerifyToken? myVerify = await TokenManager.verifyAccess(context);
     if (myVerify == VerifyToken.verified) {
@@ -104,7 +103,7 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
     VerifyToken? myVerify = await TokenManager.verifyAccess(context);
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
-      //print(myAccess);
+      
       final response = await HttpClient.instance.get("api/profile/",
           options: Options(headers: {"Authorization": "JWT $myAccess"}));
       User myUser = User.fromJson(response.data);

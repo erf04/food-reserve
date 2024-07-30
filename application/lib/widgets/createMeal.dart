@@ -54,7 +54,7 @@ class _MealCreationPageState extends State<MealCreationPage> {
       String? myAccess = await TokenManager.getAccessToken();
       final response = await HttpClient.instance.get('api/shiftmeal/create/',
           options: Options(headers: {'Authorization': 'JWT $myAccess'}));
-      //print(response.data);
+      
       if (response.statusCode == 200) {
         setState(() {
           for (var i in response.data['meals']) {
@@ -98,7 +98,7 @@ class _MealCreationPageState extends State<MealCreationPage> {
     VerifyToken? myVerify = await TokenManager.verifyAccess(context);
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
-      //print(myAccess);
+      
       final response = await HttpClient.instance.get("api/profile/",
           options: Options(headers: {"Authorization": "JWT $myAccess"}));
       User myUser = User.fromJson(response.data);
@@ -111,7 +111,7 @@ class _MealCreationPageState extends State<MealCreationPage> {
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
       selectedDate = selectedDate!.replaceAll('/', '-');
-      //print("WHAT THE FUCK");
+      
       final response = await HttpClient.instance.post(
         'api/shiftmeal/filter/',
         options: Options(headers: {'Authorization': 'JWT $myAccess'}),
@@ -147,7 +147,7 @@ class _MealCreationPageState extends State<MealCreationPage> {
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
       selectedDate = selectedDate!.replaceAll('/', '-');
-      //print("WHAT THE FUCK");
+      
       List<int> mealId = [];
       for (var i in selectedMeals) {
         mealId.add(i!.id);
@@ -209,7 +209,7 @@ class _MealCreationPageState extends State<MealCreationPage> {
                 setState(() {
                   selectedMeals.add(selectedMeal);
                   this.selectedMeals.add(selectedMeal);
-                  //print(selectedMeals);
+                  
                 });
               }
             },
@@ -540,7 +540,7 @@ class _MealCreationPageState extends State<MealCreationPage> {
                             EdgeInsets.symmetric(horizontal: 15, vertical: 15),
                       ),
                       onPressed: () async {
-                        print(selectedMeals.length);
+                        
                         if (_selectedDate != null &&
                             (!selectedMeals.isEmpty) &&
                             selectedShift != null) {

@@ -37,7 +37,7 @@ class _ReservePageState extends State<ReservePage> {
     VerifyToken? myVerify = await TokenManager.verifyAccess(context);
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
-      //print(myAccess);
+
       final response = await HttpClient.instance.get("api/profile/",
           options: Options(headers: {"Authorization": "JWT $myAccess"}));
       User myUser = User.fromJson(response.data);
@@ -71,7 +71,7 @@ class _ReservePageState extends State<ReservePage> {
               name: i["meal"]["diet"]["name"],
               type: i["meal"]["diet"]["type"]);
         }
-        //print("good");
+
         Food? dessert;
         if (i["meal"]["dessert"] == null) {
           dessert = null;
@@ -262,7 +262,7 @@ class _ReservePageState extends State<ReservePage> {
                               backgroundColor: Colors.black26,
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(16))),
-                          child: Text("Select date",
+                          child: Text("انتخاب تاریخ",
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyLarge!
@@ -272,7 +272,7 @@ class _ReservePageState extends State<ReservePage> {
                                       color: Colors.white))),
                       Text(
                         selectedDate == null
-                            ? "no date selected"
+                            ? "YYYY-MM-DD"
                             : selectedDate!.toJalaliDateTime().substring(0, 10),
                         style: Theme.of(context).textTheme.bodyLarge,
                       ),
@@ -333,12 +333,10 @@ class _ReservePageState extends State<ReservePage> {
           } else if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: const CircularProgressIndicator());
           } else if (snapshot.hasData) {
-            print(snapshot.data);
-            print(snapshot.data!.length);
             if (snapshot.data!.isEmpty) {
               return Center(
                 child: Text(
-                  "There is no food available!",
+                  "غذایی موجود نیست !",
                   style: Theme.of(context)
                       .textTheme
                       .titleLarge!
@@ -352,7 +350,7 @@ class _ReservePageState extends State<ReservePage> {
             );
           } else {
             return const Center(
-              child: SizedBox(height: 10, child: Text("Something went wrong!")),
+              child: SizedBox(height: 10, child: Text("خطایی رخ داده است !")),
             );
           }
         });
@@ -412,7 +410,6 @@ class _ReserveListState extends State<ReserveList> {
       }).catchError((onError) {
         setState(() {
           error = true;
-          print(error);
         });
       });
     }
@@ -428,15 +425,14 @@ class _ReserveListState extends State<ReserveList> {
 
   @override
   Widget build(BuildContext context) {
-    print(myList.length);
     return error
         ? Padding(
             padding: EdgeInsets.fromLTRB(
                 0, 0, 0, MediaQuery.of(context).size.height / 4),
             child: AlertDialog(
-              title: const Text('Can\'t Reserve!'),
+              title: const Text('امکان پذیر نیست'),
               content: Text(
-                "You can't reserve this meal.",
+                "شما نمی توانید این و وعده را رزرو کنید !",
                 style: Theme.of(context).textTheme.bodyLarge,
               ),
               actions: <Widget>[
@@ -456,9 +452,9 @@ class _ReserveListState extends State<ReserveList> {
                 padding: EdgeInsets.fromLTRB(
                     0, 0, 0, MediaQuery.of(context).size.height / 4),
                 child: AlertDialog(
-                  title: const Text('Reserved successfully!'),
+                  title: const Text('موفقیت آمیز بود'),
                   content: Text(
-                    "Click ok to resume.",
+                    "برای ادامه کلیک کنید ! ",
                     style: Theme.of(context).textTheme.bodyLarge,
                   ),
                   actions: <Widget>[
@@ -478,7 +474,6 @@ class _ReserveListState extends State<ReserveList> {
                 child: ListView.builder(
                     itemCount: myList.length,
                     itemBuilder: (context, index) {
-                      //print(snapshot.data![index]);
                       return Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: InkWell(
@@ -540,13 +535,13 @@ class _ReserveListState extends State<ReserveList> {
                     });
                   },
                   child: Text(
-                    'Shift : ${shiftMeal[index].shift.shiftName}',
+                    'شیفت : ${shiftMeal[index].shift.shiftName}',
                     style: Theme.of(context)
                         .textTheme
                         .titleLarge!
                         .copyWith(fontSize: 24, fontWeight: FontWeight.bold),
                   )),
-              Text('food : ${shiftMeal[index].meal.food.name}',
+              Text('غذا : ${shiftMeal[index].meal.food.name}',
                   style: Theme.of(context)
                       .textTheme
                       .titleLarge!
@@ -555,13 +550,13 @@ class _ReserveListState extends State<ReserveList> {
                 height: 8,
               ),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  SizedBox(),
+                  SizedBox(width: MediaQuery.of(context).size.width /9,),
                   Container(
                     padding: EdgeInsets.fromLTRB(
                         MediaQuery.of(context).size.width * 1 / 8, 0, 0, 0),
-                    width: MediaQuery.of(context).size.width * 1 / 2,
+                    width: MediaQuery.of(context).size.width * 5/8,
                     height: 30,
                     child: ListView.builder(
                         physics: const BouncingScrollPhysics(),
@@ -569,9 +564,12 @@ class _ReserveListState extends State<ReserveList> {
                         scrollDirection: Axis.horizontal,
                         itemBuilder: (context, index1) {
                           if (index1 == 0) {
+                            String emptyString = 'نوشیدنی ها : ';
+                            String myString = 'نوشیدنی موجود نمی باشد !';
+                            
                             return Container(
                                 margin: const EdgeInsets.fromLTRB(4, 2, 4, 2),
-                                child: Text('drinks : ',
+                                child: Text(shiftMeal[index].meal.drink.length == 0 ? myString : emptyString,
                                     style: Theme.of(context)
                                         .textTheme
                                         .titleLarge!
@@ -607,7 +605,7 @@ class _ReserveListState extends State<ReserveList> {
                           }
                         }),
                   ),
-                  SizedBox(),
+                  
                 ],
               ),
 
@@ -621,8 +619,8 @@ class _ReserveListState extends State<ReserveList> {
               ),
               Text(
                   shiftMeal[index].meal.diet == null
-                      ? 'diet : no diet food available'
-                      : 'diet : ${shiftMeal[index].meal.diet!.name}',
+                      ? 'رژیمی : غذای رژیمی موجود نیست'
+                      : 'رژیمی : ${shiftMeal[index].meal.diet!.name}',
                   style: Theme.of(context)
                       .textTheme
                       .titleLarge!
@@ -632,8 +630,8 @@ class _ReserveListState extends State<ReserveList> {
               ),
               Text(
                   shiftMeal[index].meal.desert == null
-                      ? 'dessert : no dessert food available'
-                      : 'dessert : ${shiftMeal[index].meal.desert!.name}',
+                      ? 'دسر : دسر موجود نیست'
+                      : 'دسر : ${shiftMeal[index].meal.desert!.name}',
                   style: Theme.of(context)
                       .textTheme
                       .titleLarge!
@@ -664,7 +662,7 @@ class _ReserveListState extends State<ReserveList> {
                           : Colors.black26,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16))),
-                  child: Text("Reserve",
+                  child: Text("رزرو کنید !",
                       style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                           fontSize: 20,
                           fontWeight: FontWeight.w500,
