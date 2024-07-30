@@ -9,7 +9,6 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from datetime import datetime
 from datetime import timedelta
-from djoser.serializers import UserCreateSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
 
@@ -215,7 +214,6 @@ class PasswordResetRequestSerializer(serializers.Serializer):
 
 class PasswordResetConfirmSerializer(serializers.Serializer):
     email = serializers.EmailField()
-    
     new_password = serializers.CharField(min_length=8, write_only=True)
 
     def validate_email(self, value):
@@ -226,12 +224,14 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
             raise serializers.ValidationError("This email is not registered.")
         return value
 
-    def validate_new_password(self, value):
+    def validate_new_password(self, value:str):
         """
         Check if the new password meets the criteria.
         """
         if len(value) < 8:
             raise serializers.ValidationError("Password must be at least 8 characters long.")
+        if not any(char.isdigit() for char in value):
+            raise serializers.ValidationError("Password must contain at least one digit.")
         # Add other password validations if needed (e.g., complexity, special characters)
         return value
 
@@ -240,14 +240,10 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         Check if the code is correct for the provided email.
         """
         email = data.get('email')
-        code = data.get('code')
 
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            raise serializers.ValidationError("Invalid email or code.")
-
-        if user.reset_code != code:
             raise serializers.ValidationError("Invalid email or code.")
         
         return data
@@ -334,6 +330,14 @@ class SupervisorReservationSerializer(serializers.ModelSerializer):
         if shift_meal_query_set.exists():
             return ShiftMealSerializer(shift_meal_query_set.first(),many=False,context=self.context).data
         return None
+    
+
+
+class UserUpdateSerializer(serializers.ModelSerializer):
+    profile = serializers.ImageField(required=False)
+    class Meta:
+        model = User
+        fields = ['username', 'profile', 'email', 'first_name', 'last_name', 'working_shift']
 
 
     

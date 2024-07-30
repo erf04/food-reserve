@@ -45,8 +45,11 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   }
 
   Future<void> sendCode(String code) async {
-    final response = await HttpClient.instance.post('api/check-code/',
-        data: {'code': code, 'email': myEmail}).then((onValue) {
+    final response = await HttpClient.instance
+        .post('api/check-code/',
+            data: {'code': code, 'email': myEmail},
+            options: Options(headers: {'App-Token': dotenv.env['API_KEY']}))
+        .then((onValue) {
       setState(() {
         correctPass = true;
         showCode = false;

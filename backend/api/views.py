@@ -6,7 +6,7 @@ from .serializers import (MealSerializer,ShiftMealSerializer,ReservationSerializ
 ShiftSerializer,FoodSerializer,CombinedMealShiftSerializer
 ,CombinedFoodCreationSerializer,UserSerializer,PasswordResetRequestSerializer,PasswordResetConfirmSerializer,
 DrinkSerializer,MealCreationSerializer,SupervisorRecordSerializer,SupervisorReservationSerializer,RegisterSerializer, LoginSerializer
-)
+,UserUpdateSerializer)
 from rest_framework.decorators import api_view,permission_classes
 from .models import ShiftMeal,Meal,Reservation,Shift,Food,FoodType,DailyMeal,User,Drink,ShiftManager,SupervisorRecord
 import jdatetime
@@ -487,6 +487,7 @@ class PasswordResetRequestView(APIView):
     
 
 @api_view(['POST'])
+@permission_classes([permissions.AllowAny])
 def check_code(request:Request):
     code = request.data.get('code')
     email = request.data.get('email')
@@ -631,6 +632,21 @@ def filter_shift_meals(request:Request):
     return Response(serializer.data,status=status.HTTP_200_OK)
 
 
+
+class UserUpdateAPIView(generics.RetrieveUpdateAPIView):
+    serializer_class = UserUpdateSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user
+
+    def put(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        return Response(serializer.data)
 
 
 
