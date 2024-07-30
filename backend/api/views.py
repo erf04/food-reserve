@@ -30,6 +30,7 @@ from django.template.loader import render_to_string
 from django.utils.crypto import get_random_string
 from django.db.models import Q
 from django.db.models import F
+from rest_framework.exceptions import ValidationError
 
 
 def ISO_to_gregorian(date:str):
@@ -483,6 +484,16 @@ class PasswordResetRequestView(APIView):
 
             return Response({"detail": "Password reset e-mail has been sent."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+@api_view(['POST'])
+def check_code(request:Request):
+    code = request.data.get('code')
+    email = request.data.get('email')
+    user=User.objects.get(email=email)
+    if code==user.reset_code:
+        return Response(status=status.HTTP_200_OK)
+    return Response(status=status.HTTP_400_BAD_REQUEST)
 
 class PasswordResetConfirmView(APIView):
     permission_classes = [permissions.AllowAny]
@@ -570,6 +581,7 @@ def filter_reservations(request_data:dict):
 @permission_classes([permissions.IsAuthenticated,IsSupervisorOrReadOnly])
 def get_reservations_for_supervisor(request:Request):
         reservations=filter_reservations(request_data=request.data)
+        reservations=reservations.order_by('user__first_name')
         serializer=SupervisorReservationSerializer(reservations,many=True,context={"request":request}).data
         # response_data = {}
         # if serializer:
@@ -583,6 +595,19 @@ def get_reservations_for_supervisor(request:Request):
 class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
+
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except ValidationError as e:
+            return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
+
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+    
 
 class LoginView(generics.GenericAPIView):
     serializer_class = LoginSerializer
