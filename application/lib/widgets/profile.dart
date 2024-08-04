@@ -749,24 +749,92 @@ class _ReserveHistoryState extends State<ReserveHistory> {
                     });
                   },
                   child: Text(
-                    'Shift : ${shiftMeal[index].shift.shiftName}',
+                    'شیفت : ${shiftMeal[index].shift.shiftName}',
                     style: Theme.of(context)
                         .textTheme
                         .titleLarge!
                         .copyWith(fontSize: 24, fontWeight: FontWeight.bold),
                   )),
-              TextButton(
-                  onPressed: () {},
-                  child: Text('foods: ${shiftMeal[index].meal.food.name}',
-                      style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                          fontSize: 19, fontWeight: FontWeight.w300))),
+              Text('غذا : ${shiftMeal[index].meal.food.name}',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleLarge!
+                      .copyWith(fontSize: 19, fontWeight: FontWeight.w300)),
               const SizedBox(
-                height: 6,
+                height: 8,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  SizedBox(width: MediaQuery.of(context).size.width /9,),
+                  Container(
+                    padding: EdgeInsets.fromLTRB(
+                        MediaQuery.of(context).size.width * 1 / 8, 0, 0, 0),
+                    width: MediaQuery.of(context).size.width * 5/8,
+                    height: 30,
+                    child: ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: shiftMeal[index].meal.drink.length + 1,
+                        scrollDirection: Axis.horizontal,
+                        itemBuilder: (context, index1) {
+                          if (index1 == 0) {
+                            String emptyString = 'نوشیدنی ها : ';
+                            String myString = 'نوشیدنی موجود نمی باشد !';
+                            
+                            return Container(
+                                margin: const EdgeInsets.fromLTRB(4, 2, 4, 2),
+                                child: Text(shiftMeal[index].meal.drink.length == 0 ? myString : emptyString,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge!
+                                        .copyWith(
+                                            fontSize: 19,
+                                            fontWeight: FontWeight.w300)));
+                          }
+                          if (index1 == shiftMeal[index].meal.drink.length) {
+                            return Container(
+                                margin: const EdgeInsets.fromLTRB(4, 2, 4, 2),
+                                child: Text(
+                                    shiftMeal[index]
+                                        .meal
+                                        .drink[index1 - 1]
+                                        .name,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge!
+                                        .copyWith(
+                                            fontSize: 19,
+                                            fontWeight: FontWeight.w300)));
+                          } else {
+                            return Container(
+                                margin: const EdgeInsets.fromLTRB(4, 2, 4, 2),
+                                child: Text(
+                                    '${shiftMeal[index].meal.drink[index1 - 1].name} -',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge!
+                                        .copyWith(
+                                            fontSize: 19,
+                                            fontWeight: FontWeight.w300)));
+                          }
+                        }),
+                  ),
+                  
+                ],
+              ),
+
+              // Text('drinks: ${shiftMeal[index].meal.food.name}',
+              //   style: Theme.of(context)
+              //       .textTheme
+              //       .titleLarge!
+              //       .copyWith(fontSize: 19, fontWeight: FontWeight.w300)),
+              const SizedBox(
+                height: 8,
               ),
               Text(
                   shiftMeal[index].meal.diet == null
-                      ? 'diet: no diet food available'
-                      : 'diet: ${shiftMeal[index].meal.diet!.name}',
+                      ? 'رژیمی : غذای رژیمی موجود نیست'
+                      : 'رژیمی : ${shiftMeal[index].meal.diet!.name}',
                   style: Theme.of(context)
                       .textTheme
                       .titleLarge!
@@ -776,20 +844,14 @@ class _ReserveHistoryState extends State<ReserveHistory> {
               ),
               Text(
                   shiftMeal[index].meal.desert == null
-                      ? 'dessert: no dessert food available'
-                      : 'dessert: ${shiftMeal[index].meal.desert!.name}',
+                      ? 'دسر : دسر موجود نیست'
+                      : 'دسر : ${shiftMeal[index].meal.desert!.name}',
                   style: Theme.of(context)
                       .textTheme
                       .titleLarge!
                       .copyWith(fontSize: 19, fontWeight: FontWeight.w300)),
-              const SizedBox(
-                height: 8,
-              ),
-              Text(shiftMeal[index].date,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleLarge!
-                      .copyWith(fontSize: 19, fontWeight: FontWeight.w300)),
+                      
+        
             ],
           ),
         )
@@ -801,10 +863,14 @@ class _ReserveHistoryState extends State<ReserveHistory> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        Text(shiftMeals[index].shift.shiftName,
+        Text(shiftMeals[index].meal.food.name,
             style:
                 Theme.of(context).textTheme.bodyLarge!.copyWith(fontSize: 19)),
         Text(
+          shiftMeals[index].meal.dailyMeal,
+          style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontSize: 19),
+        ),
+                Text(
           shiftMeals[index].date,
           style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontSize: 19),
         ),
