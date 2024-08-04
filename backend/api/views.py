@@ -121,7 +121,7 @@ class ReservationView(APIView):
 @permission_classes([permissions.IsAuthenticated])
 def get_all_reservations(request:Request):
     my_user=request.user
-    shift_meals=ShiftMeal.objects.filter(reservations__user=my_user)
+    shift_meals=ShiftMeal.objects.filter(reservations__user=my_user).order_by('shift_meal__date')
     serialized=ShiftMealSerializer(shift_meals,many=True,context={"request":request})
     return Response(serialized.data)
 
@@ -534,7 +534,7 @@ class ShiftManagerView(APIView):
         user=request.user
         shiftmanager=ShiftManager.objects.filter(user=user).first()
         shift=shiftmanager.shift
-        shift_users=User.objects.filter(working_shift=shift)
+        shift_users=User.objects.filter(working_shift=shift).order_by('first_name','last_name')
         serializer=UserSerializer(shift_users,many=True)
         return Response(serializer.data,status=status.HTTP_200_OK)
     
@@ -582,7 +582,7 @@ def filter_reservations(request_data:dict):
 @permission_classes([permissions.IsAuthenticated,IsSupervisorOrReadOnly])
 def get_reservations_for_supervisor(request:Request):
         reservations=filter_reservations(request_data=request.data)
-        reservations=reservations.order_by('user__first_name')
+        reservations=reservations.order_by('user__first_name','user__last_name')
         serializer=SupervisorReservationSerializer(reservations,many=True,context={"request":request}).data
         # response_data = {}
         # if serializer:
