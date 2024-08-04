@@ -32,6 +32,7 @@ from django.db.models import Q
 from django.db.models import F
 from rest_framework.exceptions import ValidationError
 from django.db.models.functions import Lower
+from datetime import datetime
 
 
 def ISO_to_gregorian(date:str):
@@ -122,7 +123,8 @@ class ReservationView(APIView):
 @permission_classes([permissions.IsAuthenticated])
 def get_all_reservations(request:Request):
     my_user=request.user
-    shift_meals=ShiftMeal.objects.filter(reservations__user=my_user).order_by('date')
+    now = datetime.now()
+    shift_meals=ShiftMeal.objects.filter(reservations__user=my_user,date__lt=now).order_by('date')
     serialized=ShiftMealSerializer(shift_meals,many=True,context={"request":request})
     return Response(serialized.data)
 
