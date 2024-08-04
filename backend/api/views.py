@@ -121,7 +121,7 @@ class ReservationView(APIView):
 @permission_classes([permissions.IsAuthenticated])
 def get_all_reservations(request:Request):
     my_user=request.user
-    shift_meals=ShiftMeal.objects.filter(reservations__user=my_user).order_by('shift_meal__date')
+    shift_meals=ShiftMeal.objects.filter(reservations__user=my_user).order_by('date')
     serialized=ShiftMealSerializer(shift_meals,many=True,context={"request":request})
     return Response(serialized.data)
 
