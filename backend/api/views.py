@@ -603,6 +603,8 @@ class RegisterView(generics.CreateAPIView):
         try:
             serializer.is_valid(raise_exception=True)
         except ValidationError as e:
+            print(serializer.errors)
+            print(e.detail)
             return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
 
         self.perform_create(serializer)
@@ -640,7 +642,7 @@ class UserUpdateAPIView(generics.RetrieveUpdateAPIView):
     def get_object(self):
         return self.request.user
 
-    def put(self, request, *args, **kwargs):
+    def put(self, request:Request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)

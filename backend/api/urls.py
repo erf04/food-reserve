@@ -19,5 +19,6 @@ urlpatterns = [
     path('register/', views.RegisterView.as_view(), name='register'),
     path('login/', views.LoginView.as_view(), name='login'),
     path('shiftmeal/filter/',views.filter_shift_meals),
-    path('check-code/',views.check_code)
+    path('check-code/',views.check_code),
+    path('user/update/',views.UserUpdateAPIView.as_view())
 ]
