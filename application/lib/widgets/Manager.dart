@@ -119,10 +119,8 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
     return Scaffold(
       appBar: AppBar(
         foregroundColor: Colors.white,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(
+        leadingWidth: 90,
+        leading: IconButton(
               onPressed: () {
                 FadePageRoute.navigateToNextPage(context, MainPage());
               },
@@ -132,6 +130,10 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
                 color: Color.fromARGB(255, 2, 16, 43),
               ),
             ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            
             Text(
               'صفحه سرپرست',
               style: Theme.of(context)
@@ -139,7 +141,12 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
                   .bodyMedium!
                   .copyWith(fontSize: 25, fontWeight: FontWeight.bold),
             ),
-            FutureBuilder<User?>(
+            
+          ],
+        ),
+        actions: [
+          SizedBox(width: 10,),
+          FutureBuilder<User?>(
                 future: getProfileForMainPage(),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
@@ -178,8 +185,8 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
                         icon: Icon(CupertinoIcons.profile_circled));
                   }
                 }),
-          ],
-        ),
+                SizedBox(width: 50,)
+        ],
         backgroundColor: Colors.white,
       ),
       body: Stack(
@@ -213,11 +220,11 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
                           height: screenHeight * 0.01,
                         ),
                         DropdownButtonFormField<User>(
-                          decoration: InputDecoration(labelText: 'Select Supervisor'),
+                          decoration: InputDecoration(label: Text('انتخاب ناظر', style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight:FontWeight.bold, fontSize: 18 ))),
                           items: snapshot.data!.map((User user) {
                             return DropdownMenuItem<User>(
                               value: user,
-                              child: Text(user.userName),
+                              child: Text(user.firstName + ' ' + user.lastName),
                             );
                           }).toList(),
                           onChanged: (User? newValue) {
@@ -232,7 +239,7 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
                           children: [
                             Expanded(
                               child: TextFormField(
-                                decoration: InputDecoration(labelText: 'From Date'),
+                                decoration: InputDecoration(label: Text('تاریخ شروع', style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight:FontWeight.bold, fontSize: 18 ))),
                                 readOnly: true,
                                 onTap: () => _selectDate(context, true),
                                 controller: TextEditingController(
@@ -251,7 +258,7 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
                           children: [
                             Expanded(
                               child: TextFormField(
-                                decoration: InputDecoration(labelText: 'To Date'),
+                                decoration: InputDecoration(label: Text('شروع پایان', style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight:FontWeight.bold, fontSize: 18 ))),
                                 readOnly: true,
                                 onTap: () => _selectDate(context, false),
                                 controller: TextEditingController(
@@ -265,11 +272,16 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
                             ),
                           ],
                         ),
-                        SizedBox(height: screenHeight * 0.03),
+                        SizedBox(height: screenHeight * 0.05),
                         Center(
                           child: ElevatedButton(
                             onPressed: _submit,
-                            child: Text('Assign Supervisor'),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Center(child: Text('تایید اطلاعات', style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight:FontWeight.bold, fontSize: 20 ),)),
+                              ],
+                            ),
                           ),
                         ),
                       ],

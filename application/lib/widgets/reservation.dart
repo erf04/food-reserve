@@ -132,10 +132,8 @@ class _ReservePageState extends State<ReservePage> {
     return Scaffold(
         appBar: AppBar(
           foregroundColor: Colors.white,
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              IconButton(
+          leadingWidth: 110,
+          leading: IconButton(
                   onPressed: () {
                     FadePageRoute.navigateToNextPage(context, MainPage());
                   },
@@ -144,14 +142,16 @@ class _ReservePageState extends State<ReservePage> {
                     size: 40,
                     color: Color.fromARGB(255, 2, 16, 43),
                   )),
-              Text(
-                'صفحه ی رزرو',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium!
-                    .copyWith(fontSize: 25, fontWeight: FontWeight.bold),
-              ),
-              FutureBuilder<User?>(
+          title: Text(
+            'صفحه ی رزرو',
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium!
+                .copyWith(fontSize: 25, fontWeight: FontWeight.bold),
+          ),
+          actions: [
+            SizedBox(width: 20,),
+            FutureBuilder<User?>(
                   future: getProfileForMainPage(),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
@@ -192,8 +192,7 @@ class _ReservePageState extends State<ReservePage> {
                           icon: Icon(CupertinoIcons.profile_circled));
                     }
                   }),
-            ],
-          ),
+                  SizedBox(width: 50,)],
           backgroundColor: Colors.white,
         ),
         body: SafeArea(

@@ -298,11 +298,8 @@ class _MealCreationPageState extends State<MealCreationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        foregroundColor: Colors.white,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            IconButton(
+        leadingWidth: 110,
+        leading: IconButton(
                 onPressed: () {
                   FadePageRoute.navigateToNextPage(context, MainPage());
                 },
@@ -311,6 +308,11 @@ class _MealCreationPageState extends State<MealCreationPage> {
                   size: 40,
                   color: Color.fromARGB(255, 2, 16, 43),
                 )),
+        foregroundColor: Colors.white,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            
             Text(
               'ایجاد وعده',
               style: Theme.of(context)
@@ -318,7 +320,12 @@ class _MealCreationPageState extends State<MealCreationPage> {
                   .bodyMedium!
                   .copyWith(fontSize: 25, fontWeight: FontWeight.bold),
             ),
-            FutureBuilder<User?>(
+            
+          ],
+        ),
+        actions: [
+          SizedBox(width: 20,),
+          FutureBuilder<User?>(
                 future: getProfileForMainPage(),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
@@ -358,8 +365,8 @@ class _MealCreationPageState extends State<MealCreationPage> {
                         icon: Icon(CupertinoIcons.profile_circled));
                   }
                 }),
-          ],
-        ),
+                SizedBox(width: 50,)
+        ],
         backgroundColor: Colors.white,
       ),
       body: SafeArea(

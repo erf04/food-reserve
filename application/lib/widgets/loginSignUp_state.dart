@@ -46,44 +46,58 @@ class _LoginSignUpState extends State<LoginSignUp> {
   TextEditingController myController4 = TextEditingController();
   TextEditingController myController5 = TextEditingController();
   TextEditingController myController6 = TextEditingController();
-  static Future<bool> getAuthLogin(
+  static Future<void> getAuthLogin(
       String myUser, String myPass, context) async {
-    final response = await HttpClient.instance
-        .post('api/login/', data: {'username': myUser, 'password': myPass});
-    if (response.statusCode == 200) {
-      TokenManager.saveTokens(
-          response.data["access"], response.data["refresh"]);
-      FadePageRoute.navigateToNextPage(context, MainPage());
-      return false;
-    } else {
-      return true;
+    try {
+      final response = await HttpClient.instance.post('api/login/',
+          data: {'username': myUser, 'password': myPass}).then((response) {
+        TokenManager.saveTokens(
+            response.data["access"], response.data["refresh"]);
+        FadePageRoute.navigateToNextPage(context, MainPage());
+        print(response.data);
+      });
+    } on DioException catch (e) {
+      if (e.response != null) {
+        print(e.response?.data);
+        print('Error status code: ${e.response?.statusCode}');
+        print('Error data: ${e.response?.data}');
+      } else {
+        print('Error message: ${e.message}');
+      }
     }
   }
 
-  static Future<bool> getAuthSignUp(
+  static Future<void> getAuthSignUp(
       String myUser,
       String myPass,
       String firstName,
       String lastName,
       String email,
       BuildContext context) async {
-    final response;
-    response = await HttpClient.instance.post('api/register/',
-        options: Options(headers: {'App-Token': dotenv.env['API_KEY']}),
-        data: {
-          'username': myUser,
-          'password': myPass,
-          'first_name': firstName,
-          'last_name': lastName,
-          'email': email
-        }).catchError((error) {
-      return true;
-    });
-    if (response.statusCode == 201) {
-      _LoginSignUpState.getAuthLogin(myUser, myPass, context);
-      return false;
-    } else {
-      return true;
+    try {
+      firstName = firstName[0].toUpperCase() + firstName.substring(1).toLowerCase();
+      lastName = lastName[0].toUpperCase() + lastName.substring(1).toLowerCase();
+
+      final response;
+      response = await HttpClient.instance.post('api/register/',
+          options: Options(headers: {'App-Token': dotenv.env['API_KEY']}),
+          data: {
+            'username': myUser,
+            'password': myPass,
+            'first_name': firstName,
+            'last_name': lastName,
+            'email': email
+          }).then((onValue) {
+        _LoginSignUpState.getAuthLogin(myUser, myPass, context);
+        print(onValue);
+      });
+    } on DioException catch (e) {
+      if (e.response != null) {
+        print('Error status code: ${e.response?.statusCode}');
+        print('Error data: ${e.response?.data}');
+      } else {
+        print('Error message: ${e.message}');
+      }
     }
   }
 

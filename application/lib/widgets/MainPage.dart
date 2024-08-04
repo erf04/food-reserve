@@ -127,10 +127,8 @@ class _MainPageState extends State<MainPage> {
         appBar: AppBar(
           centerTitle: true,
           foregroundColor: Colors.white,
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              IconButton(
+          leadingWidth: 120,
+          leading: IconButton(
                   onPressed: () {
                     FadePageRoute.navigateToNextPage(
                         context, const LoginSignUp());
@@ -140,14 +138,16 @@ class _MainPageState extends State<MainPage> {
                     size: 40,
                     color: Color.fromARGB(255, 2, 16, 43),
                   )),
-              Text(
-                'صفحه اصلی',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium!
-                    .copyWith(fontSize: 25, fontWeight: FontWeight.bold),
-              ),
-              FutureBuilder<User?>(
+          title: Text(
+            'صفحه اصلی',
+            style: Theme.of(context)
+                .textTheme
+                .bodyMedium!
+                .copyWith(fontSize: 25, fontWeight: FontWeight.bold),
+          ),
+          actions: [
+            SizedBox(width: 30,),
+                          FutureBuilder<User?>(
                   future: getProfileForMainPage(),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
@@ -188,15 +188,8 @@ class _MainPageState extends State<MainPage> {
                           icon: Icon(CupertinoIcons.profile_circled));
                     }
                   }),
-              // IconButton(
-              //     onPressed: () {},
-              //     icon: const Icon(
-              //       CupertinoIcons.profile_circled,
-              //       size: 40,
-              //       color: Color.fromARGB(255, 2, 16, 43),
-              //     )),
-            ],
-          ),
+                  SizedBox(width: 50,)
+          ],
           backgroundColor: Colors.white,
         ),
         body: SafeArea(

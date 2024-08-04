@@ -1,6 +1,7 @@
 // ignore_for_file: public_member_api_docs, sort_constructors_first
 import 'dart:convert';
 
+import 'package:application/design/meal.dart';
 import 'package:application/design/shiftmeal.dart';
 import 'package:application/design/user.dart';
 import 'package:application/repository/HttpClient.dart';
@@ -48,6 +49,11 @@ class _MealReservationsPageState extends State<MealReservationsPage> {
       });
     }
   }
+
+  bool showMeal = false;
+  Meal? meal;
+  String emptyString = '';
+  String dashString = ' - ';
 
   Future<List<UserMeal>> fetchReservations() async {
     VerifyToken? myVerify = await TokenManager.verifyAccess(context);
@@ -103,7 +109,7 @@ class _MealReservationsPageState extends State<MealReservationsPage> {
     VerifyToken? myVerify = await TokenManager.verifyAccess(context);
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
-    
+
       final response = await HttpClient.instance.get("api/profile/",
           options: Options(headers: {"Authorization": "JWT $myAccess"}));
       User myUser = User.fromJson(response.data);
@@ -116,10 +122,8 @@ class _MealReservationsPageState extends State<MealReservationsPage> {
     return Scaffold(
       appBar: AppBar(
         foregroundColor: Colors.white,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            IconButton(
+        leadingWidth:110 ,
+        leading: IconButton(
                 onPressed: () {
                   FadePageRoute.navigateToNextPage(context, MainPage());
                 },
@@ -128,14 +132,16 @@ class _MealReservationsPageState extends State<MealReservationsPage> {
                   size: 40,
                   color: Color.fromARGB(255, 2, 16, 43),
                 )),
-            Text(
-              'رزرو های روز',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium!
-                  .copyWith(fontSize: 25, fontWeight: FontWeight.bold),
-            ),
-            FutureBuilder<User?>(
+        title: Text(
+          'رزرو های روز',
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium!
+              .copyWith(fontSize: 25, fontWeight: FontWeight.bold),
+        ),
+        actions: [
+          SizedBox(width: 10,),
+          FutureBuilder<User?>(
                 future: getProfileForMainPage(),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
@@ -175,8 +181,8 @@ class _MealReservationsPageState extends State<MealReservationsPage> {
                         icon: Icon(CupertinoIcons.profile_circled));
                   }
                 }),
-          ],
-        ),
+                SizedBox(width: 50,)
+        ],
         backgroundColor: Colors.white,
       ),
       body: SafeArea(
@@ -224,7 +230,6 @@ class _MealReservationsPageState extends State<MealReservationsPage> {
                         children: [
                           Expanded(
                             child: TextFormField(
-
                               decoration:
                                   InputDecoration(labelText: 'انتخاب تاریخ'),
                               readOnly: true,
@@ -248,7 +253,8 @@ class _MealReservationsPageState extends State<MealReservationsPage> {
                       padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
                       child: TextField(
                         inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-\s]')),
+                          FilteringTextInputFormatter.allow(
+                              RegExp(r'[a-zA-Z0-9@._-\s]')),
                         ],
                         controller: searchController,
                         decoration: InputDecoration(
@@ -265,7 +271,32 @@ class _MealReservationsPageState extends State<MealReservationsPage> {
                     SizedBox(height: 16),
                   ]),
                   Expanded(
-                    child: FutureBuilder<List<UserMeal>>(
+                    child:
+                     showMeal ? 
+                     AlertDialog(
+                          title: Text(this.meal!.food.name),
+                          content: Text(
+                            "${meal!.diet != null ? meal!.diet!.name: emptyString}${meal!.desert!=null ? dashString + meal!.desert!.name : emptyString}${meal!.drink.isEmpty ? emptyString : '\n${meal!.drinkToString()}' }",
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
+                          actions: <Widget>[
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                TextButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      showMeal = false;
+                                      meal = null;
+                                    });
+                                  },
+                                  child: Text('ok'),
+                                ),
+                              ],
+                            ),
+                          ],
+                        )
+                     : FutureBuilder<List<UserMeal>>(
                         future: fetchReservations(),
                         builder: (context, snapshot) {
                           if (snapshot.hasData) {
@@ -282,13 +313,34 @@ class _MealReservationsPageState extends State<MealReservationsPage> {
                                       DataCell(Text(reservation.user.firstName +
                                           ' ' +
                                           reservation.user.lastName)),
-                                      DataCell(Text(reservation.lunch == null
-                                          ? ''
-                                          : reservation.lunch!.meal.food.name)),
-                                      DataCell(Text(reservation.dinner == null
-                                          ? ''
-                                          : reservation
-                                              .dinner!.meal.food.name)),
+                                      DataCell(InkWell(
+                                        onTap: () {
+                                          if (reservation.lunch != null) {
+                                            setState(() {
+                                              showMeal = true;
+                                              meal = reservation.lunch!.meal;
+                                            });
+                                          }
+                                        },
+                                        child: Text(reservation.lunch == null
+                                            ? ''
+                                            : reservation
+                                                .lunch!.meal.food.name),
+                                      )),
+                                      DataCell(InkWell(
+                                        onTap: () {
+                                          if (reservation.dinner != null) {
+                                            setState(() {
+                                              showMeal = true;
+                                              meal = reservation.dinner!.meal;
+                                            });
+                                          }
+                                        },
+                                        child: Text(reservation.dinner == null
+                                            ? ''
+                                            : reservation
+                                                .dinner!.meal.food.name),
+                                      )),
                                     ],
                                   );
                                 }).toList(),
