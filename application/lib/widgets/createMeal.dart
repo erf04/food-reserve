@@ -340,7 +340,7 @@ class _MealCreationPageState extends State<MealCreationPage> {
                           child: Container(
                             child: CachedNetworkImage(
                                 imageUrl:
-                                    'http://10.0.2.2:8000${snapshot.data?.profilePhoto}',
+                                    'https://reserve.chbk.run${snapshot.data?.profilePhoto}',
                                 placeholder: (context, url) => const Center(
                                     child: CircularProgressIndicator()),
                                 errorWidget: (context, url, error) =>

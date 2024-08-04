@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:application/design/food.dart';
 import 'package:application/design/meal.dart';
@@ -28,60 +29,46 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
-  void _showChangePasswordDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('پسورد جدید'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: controller1,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: 'پسورد جدید'),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
-                ],
-              ),
-              TextField(
-                obscureText: true,
-                controller: controller2,
-                decoration: InputDecoration(labelText: 'تایید پسورد جدید'),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
-                ],
-              ),
-            ],
-          ),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                FadePageRoute.navigateToNextPage(context, Profile());
-              },
-              child: Text('بازگشت'),
-            ),
-            TextButton(
-              onPressed: () {
-                if (controller1.text == controller2.text) {
-                  // Change password logic here
-                  FadePageRoute.navigateToNextPage(context, Profile());
-                } else {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('پسورد و تاییدیه ی آن یکی نیستند')),
-                  );
-                }
-              },
-              child: Text('تایید'),
-            ),
-          ],
+  Future<void> changeInfo(String firstName, String lastName, String email,
+      String userName, File? profileImage) async {
+    VerifyToken? myVerify = await TokenManager.verifyAccess(context);
+    if (myVerify == VerifyToken.verified) {
+      FormData formData;
+      if (profileImage != null) {
+        String fileName = profileImage!.path.split('/').last;
+        formData = FormData.fromMap({
+          "profile": await MultipartFile.fromFile(profileImage.path,
+              filename: fileName),
+          "first_name": firstName,
+          "last_name": lastName,
+          "email": email,
+          "username": userName
+        });
+      } else {
+        formData = FormData.fromMap({
+          "first_name": firstName,
+          "last_name": lastName,
+          "email": email,
+          "username": userName
+        });
+      }
+      String? myAccess = await TokenManager.getAccessToken();
+      final response = await HttpClient.instance
+          .put("api/user/update/",
+              options: Options(headers: {"Authorization": "JWT $myAccess"}),
+              data: formData)
+          .then((onValue) {
+        print("Success");
+        FadePageRoute.navigateToNextPage(context, Profile());
+      }).catchError((onError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('اطلاعات وارد شده قابل قبول نیست !')),
         );
-      },
-    );
+      });
+    }
   }
 
-  void _showChangeUsernameDialog() {
+  void _showChangeUsernameDialog(User myUser) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -103,8 +90,41 @@ class _ProfileState extends State<Profile> {
             ),
             TextButton(
               onPressed: () {
-                //TODO
+                changeInfo(myUser.firstName, myUser.lastName, myUser.email,
+                    controller1.text, null);
+              },
+              child: Text('تایید'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showChangeEmailDialog(User myUser) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('ایمیل جدید'),
+          content: TextField(
+            controller: controller2,
+            decoration: InputDecoration(labelText: 'ایمیل جدید'),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
                 FadePageRoute.navigateToNextPage(context, Profile());
+              },
+              child: Text('بازگشت'),
+            ),
+            TextButton(
+              onPressed: () {               
+                changeInfo(myUser.firstName, myUser.lastName, controller2.text,
+                    myUser.userName, null);
               },
               child: Text('تایید'),
             ),
@@ -198,20 +218,16 @@ class _ProfileState extends State<Profile> {
   }
 
   final ImagePicker _picker = ImagePicker();
-  String? _base64Image;
   bool isInChangePassword = false;
   bool isInChangeUsername = false;
   TextEditingController controller1 = TextEditingController();
   TextEditingController controller2 = TextEditingController();
 
-  Future<void> _pickImage(ImageSource source) async {
-    final XFile? image = await _picker.pickImage(source: source);
-    if (image != null) {
-      final bytes = await image.readAsBytes();
-      setState(() {
-        _base64Image = base64Encode(bytes);
-      });
-    }
+  Future<void> _pickImage(ImageSource source, User myUser) async {
+    XFile? imagePickerThis = await _picker.pickImage(source: source);
+    File image = File(imagePickerThis!.path);
+    changeInfo(myUser.firstName, myUser.lastName, myUser.email, myUser.userName,
+        image);
   }
 
   Widget getNormalProfileWidget() {
@@ -238,8 +254,7 @@ class _ProfileState extends State<Profile> {
               builder: (context, snapshot) {
                 if (snapshot.hasError) {
                   return const Center(
-                    child: SizedBox(
-                        height: 10, child: Text("Something went wrong!")),
+                    child: SizedBox(height: 10, child: Text("خطایی رخ داد !")),
                   );
                 } else if (snapshot.connectionState ==
                     ConnectionState.waiting) {
@@ -261,7 +276,7 @@ class _ProfileState extends State<Profile> {
                                 child: Container(
                                   child: CachedNetworkImage(
                                       imageUrl:
-                                          'http://10.0.2.2:8000${snapshot.data?.profilePhoto}',
+                                          'https://reserve.chbk.run${snapshot.data?.profilePhoto}',
                                       placeholder: (context, url) => const Center(
                                           child: Center(
                                               child:
@@ -279,11 +294,12 @@ class _ProfileState extends State<Profile> {
                               right: 4,
                               child: InkWell(
                                 onTap: () {
-                                  _pickImage(ImageSource.gallery);
+                                  _pickImage(
+                                      ImageSource.gallery, snapshot.data!);
                                 },
                                 child: ClipRRect(
-                                  borderRadius:
-                                      const BorderRadius.all(Radius.circular(40)),
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(40)),
                                   child: Image.asset(
                                     'assets/cameraIcon.jpg',
                                     width: 40,
@@ -323,7 +339,8 @@ class _ProfileState extends State<Profile> {
                                                 fontWeight: FontWeight.bold)),
                                     IconButton(
                                         onPressed: () {
-                                          _showChangeUsernameDialog();
+                                          _showChangeUsernameDialog(
+                                              snapshot.data!);
                                         },
                                         icon: const Icon(CupertinoIcons.pen))
                                   ],
@@ -331,7 +348,7 @@ class _ProfileState extends State<Profile> {
                               )),
                         ),
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
                           child: TextButton(
                               onPressed: () {},
                               child: Container(
@@ -348,49 +365,14 @@ class _ProfileState extends State<Profile> {
                                     const SizedBox(
                                       width: 12,
                                     ),
-                                    Text(
-                                      'تغییر پسورد',
-                                      style: Theme.of(context)
-                                          .textTheme
-                                          .bodyLarge!
-                                          .copyWith(fontWeight: FontWeight.bold),
-                                    ),
-                                    IconButton(
-                                        onPressed: () {
-                                          _showChangePasswordDialog();
-                                        },
-                                        icon: const Icon(CupertinoIcons.pen)),
-                                  ],
-                                ),
-                              )),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-                          child: TextButton(
-                              onPressed: () {},
-                              child: Container(
-                                width: MediaQuery.of(context).size.width * 0.7,
-                                height: 40,
-                                decoration: const BoxDecoration(
-                                    color: Color.fromARGB(205, 255, 255, 255),
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(24))),
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: [
-                                    const SizedBox(
-                                      width: 12,
-                                    ),
-                                    Text('Change Profile Image',
+                                    Text(snapshot.data!.email,
                                         style: Theme.of(context)
                                             .textTheme
-                                            .bodyLarge!
-                                            .copyWith(
-                                                fontWeight: FontWeight.bold)),
+                                            .bodyMedium),
                                     IconButton(
                                         onPressed: () {
-                                          _pickImage(ImageSource.gallery);
+                                          _showChangeEmailDialog(
+                                              snapshot.data!);
                                         },
                                         icon: const Icon(CupertinoIcons.pen))
                                   ],
@@ -416,11 +398,13 @@ class _ProfileState extends State<Profile> {
                                       width: 12,
                                     ),
                                     Text(
-                                      'See food records',
+                                      'تاریخچه رزرو',
                                       style: Theme.of(context)
                                           .textTheme
                                           .bodyLarge!
-                                          .copyWith(fontWeight: FontWeight.bold),
+                                          .copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 18),
                                     ),
                                     IconButton(
                                         onPressed: () {
@@ -428,8 +412,8 @@ class _ProfileState extends State<Profile> {
                                             isInHistory = true;
                                           });
                                         },
-                                        icon:
-                                            const Icon(CupertinoIcons.bookmark)),
+                                        icon: const Icon(
+                                            CupertinoIcons.bookmark)),
                                   ],
                                 ),
                               )),
@@ -457,7 +441,8 @@ class _ProfileState extends State<Profile> {
                                             .textTheme
                                             .bodyLarge!
                                             .copyWith(
-                                                fontWeight: FontWeight.bold)),
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 18)),
                                     Icon(
                                       snapshot.data!.isSuperVisor
                                           ? CupertinoIcons.check_mark
@@ -493,7 +478,8 @@ class _ProfileState extends State<Profile> {
                                             .textTheme
                                             .bodyLarge!
                                             .copyWith(
-                                                fontWeight: FontWeight.bold)),
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 18)),
                                     Icon(
                                       snapshot.data!.isShiftManager
                                           ? CupertinoIcons.check_mark
@@ -511,8 +497,7 @@ class _ProfileState extends State<Profile> {
                   );
                 } else {
                   return const Center(
-                    child: SizedBox(
-                        height: 10, child: Text("Something went wrong!")),
+                    child: SizedBox(height: 10, child: Text("خطایی رخ داد !")),
                   );
                 }
               }),
@@ -524,23 +509,23 @@ class _ProfileState extends State<Profile> {
   AppBar myAppBar(BuildContext context, String title, bool inHistory) {
     return AppBar(
       foregroundColor: Colors.white,
-      leadingWidth: 120 ,
-      leading:          IconButton(
-              onPressed: () {
-                if (inHistory == true) {
-                  setState(() {
-                    this.isInHistory = false;
-                  });
-                } else {
-                  FadePageRoute.navigateToNextPage(context, MainPage());
-                }
-                //Navigator.pushReplacement(context, MyHomePage(title: ''));
-              },
-              icon: const Icon(
-                CupertinoIcons.back,
-                size: 40,
-                color: Color.fromARGB(255, 2, 16, 43),
-              )),
+      leadingWidth: 120,
+      leading: IconButton(
+          onPressed: () {
+            if (inHistory == true) {
+              setState(() {
+                this.isInHistory = false;
+              });
+            } else {
+              FadePageRoute.navigateToNextPage(context, MainPage());
+            }
+            //Navigator.pushReplacement(context, MyHomePage(title: ''));
+          },
+          icon: const Icon(
+            CupertinoIcons.back,
+            size: 40,
+            color: Color.fromARGB(255, 2, 16, 43),
+          )),
       title: Center(
         child: Text(
           title,
@@ -552,52 +537,56 @@ class _ProfileState extends State<Profile> {
       ),
       backgroundColor: Colors.white,
       actions: [
-        SizedBox(width: 30,),
+        SizedBox(
+          width: 30,
+        ),
         Center(
           child: FutureBuilder<User?>(
-                future: getProfile(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return InkWell(
-                      onTap: () {
-                        FadePageRoute.navigateToNextPage(context, Profile());
-                      },
-                      child: CircleAvatar(
-                        backgroundColor: Colors.deepOrange,
-                        radius: 20,
-                        child: ClipOval(
-                          child: Container(
-                            child: CachedNetworkImage(
-                                imageUrl:
-                                    'http://10.0.2.2:8000${snapshot.data?.profilePhoto}',
-                                placeholder: (context, url) => const Center(
-                                    child: Center(
-                                        child: CircularProgressIndicator())),
-                                errorWidget: (context, url, error) =>
-                                    Center(child: Icon(Icons.error)),
-                                fit: BoxFit.cover,
-                                width: 40,
-                                height: 40),
-                          ),
+              future: getProfile(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return InkWell(
+                    onTap: () {
+                      FadePageRoute.navigateToNextPage(context, Profile());
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.deepOrange,
+                      radius: 20,
+                      child: ClipOval(
+                        child: Container(
+                          child: CachedNetworkImage(
+                              imageUrl:
+                                  'https://reserve.chbk.run${snapshot.data?.profilePhoto}',
+                              placeholder: (context, url) => const Center(
+                                  child: Center(
+                                      child: CircularProgressIndicator())),
+                              errorWidget: (context, url, error) =>
+                                  Center(child: Icon(Icons.error)),
+                              fit: BoxFit.cover,
+                              width: 40,
+                              height: 40),
                         ),
                       ),
-                    );
-                  } else if (snapshot.connectionState ==
-                      ConnectionState.waiting) {
-                    return Center(
-                      child: Center(child: CircularProgressIndicator()),
-                    );
-                  } else {
-                    return IconButton(
-                        onPressed: () {
-                          FadePageRoute.navigateToNextPage(context, Profile());
-                        },
-                        icon: Icon(CupertinoIcons.profile_circled));
-                  }
-                }),
+                    ),
+                  );
+                } else if (snapshot.connectionState ==
+                    ConnectionState.waiting) {
+                  return Center(
+                    child: Center(child: CircularProgressIndicator()),
+                  );
+                } else {
+                  return IconButton(
+                      onPressed: () {
+                        FadePageRoute.navigateToNextPage(context, Profile());
+                      },
+                      icon: Icon(CupertinoIcons.profile_circled));
+                }
+              }),
         ),
-        SizedBox(width: 50,)],
-        
+        SizedBox(
+          width: 50,
+        )
+      ],
     );
   }
 }
@@ -642,7 +631,7 @@ class _ReserveHistoryState extends State<ReserveHistory> {
                                         .bodyLarge!
                                         .copyWith(color: Colors.white)),
                                 Text(
-                                  "Something went wrong!",
+                                  "خطایی رخ داد !",
                                   style: Theme.of(context)
                                       .textTheme
                                       .bodyLarge!
@@ -653,7 +642,12 @@ class _ReserveHistoryState extends State<ReserveHistory> {
                       );
                     } else if (snapshot.connectionState ==
                         ConnectionState.waiting) {
-                      return Center(child: const CircularProgressIndicator());
+                      return Column(
+                        children: [
+                          SizedBox(height: 60,),
+                          Center(child: const CircularProgressIndicator()),
+                        ],
+                      );
                     } else if (snapshot.hasData) {
                       if (snapshot.data!.isEmpty) {
                         return Container(
@@ -766,11 +760,13 @@ class _ReserveHistoryState extends State<ReserveHistory> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  SizedBox(width: MediaQuery.of(context).size.width /9,),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width / 9,
+                  ),
                   Container(
                     padding: EdgeInsets.fromLTRB(
                         MediaQuery.of(context).size.width * 1 / 8, 0, 0, 0),
-                    width: MediaQuery.of(context).size.width * 5/8,
+                    width: MediaQuery.of(context).size.width * 5 / 8,
                     height: 30,
                     child: ListView.builder(
                         physics: const BouncingScrollPhysics(),
@@ -780,10 +776,13 @@ class _ReserveHistoryState extends State<ReserveHistory> {
                           if (index1 == 0) {
                             String emptyString = 'نوشیدنی ها : ';
                             String myString = 'نوشیدنی موجود نمی باشد !';
-                            
+
                             return Container(
                                 margin: const EdgeInsets.fromLTRB(4, 2, 4, 2),
-                                child: Text(shiftMeal[index].meal.drink.length == 0 ? myString : emptyString,
+                                child: Text(
+                                    shiftMeal[index].meal.drink.length == 0
+                                        ? myString
+                                        : emptyString,
                                     style: Theme.of(context)
                                         .textTheme
                                         .titleLarge!
@@ -819,7 +818,6 @@ class _ReserveHistoryState extends State<ReserveHistory> {
                           }
                         }),
                   ),
-                  
                 ],
               ),
 
@@ -850,8 +848,6 @@ class _ReserveHistoryState extends State<ReserveHistory> {
                       .textTheme
                       .titleLarge!
                       .copyWith(fontSize: 19, fontWeight: FontWeight.w300)),
-                      
-        
             ],
           ),
         )
@@ -870,7 +866,7 @@ class _ReserveHistoryState extends State<ReserveHistory> {
           shiftMeals[index].meal.dailyMeal,
           style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontSize: 19),
         ),
-                Text(
+        Text(
           shiftMeals[index].date,
           style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontSize: 19),
         ),
