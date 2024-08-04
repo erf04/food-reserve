@@ -7,3 +7,4 @@ djoser==2.2.2
 drf-yasg==1.21.7
 Pillow==10.0.1
 django-jalali==6.2.1
+kavenegar==1.1.2

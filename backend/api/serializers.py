@@ -337,7 +337,12 @@ class UserUpdateSerializer(serializers.ModelSerializer):
     profile = serializers.ImageField(required=False)
     class Meta:
         model = User
-        fields = ['username', 'profile', 'email', 'first_name', 'last_name', 'working_shift']
+        fields = ['username', 'profile', 'email', 'first_name', 'last_name']
+    
+    def validate_email(self,value:str):
+        if User.objects.filter(email=value).exclude(self.instance).exists():
+            raise serializers.ValidationError("email is already exists")
+        return value
 
 
     

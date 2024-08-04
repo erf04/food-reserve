@@ -31,6 +31,7 @@ from django.utils.crypto import get_random_string
 from django.db.models import Q
 from django.db.models import F
 from rest_framework.exceptions import ValidationError
+from django.db.models.functions import Lower
 
 
 def ISO_to_gregorian(date:str):
@@ -582,15 +583,9 @@ def filter_reservations(request_data:dict):
 @permission_classes([permissions.IsAuthenticated,IsSupervisorOrReadOnly])
 def get_reservations_for_supervisor(request:Request):
         reservations=filter_reservations(request_data=request.data)
-        reservations=reservations.order_by('user__first_name','user__last_name')
+        reservations=reservations.order_by(Lower('user__first_name'),Lower('user__last_name'))
         serializer=SupervisorReservationSerializer(reservations,many=True,context={"request":request}).data
-        # response_data = {}
-        # if serializer:
-        #     response_data['user'] = serializer[0]['user']
-        #     response_data['date'] = serializer[0]['date']
-        #     response_data['lunch'] = next((res['lunch'] for res in serializer if res['lunch']), None)
-        #     response_data['dinner'] = next((res['dinner'] for res in serializer if res['dinner']), None)
-        return Response(data=serializer,status=status.HTTP_200_OK)
+        return Response(data=serializer,status=status.HTTP_200_OK)  
 
 
 class RegisterView(generics.CreateAPIView):
@@ -648,7 +643,7 @@ class UserUpdateAPIView(generics.RetrieveUpdateAPIView):
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-        return Response(serializer.data)
+        return Response(serializer.data,status=status.HTTP_200_OK)
 
 
 
