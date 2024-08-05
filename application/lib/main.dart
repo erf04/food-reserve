@@ -12,15 +12,20 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 void main() async {
-  await dotenv.load(fileName: ".env");
-  WidgetsFlutterBinding.ensureInitialized();
-  await SharedPreferencesManager.instance.init();
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]).then((_) {
-    runApp(MyApp());
-  });
+  DateTime comparisonDate = DateTime(2024, 9, 20);
+  DateTime today = DateTime.now();
+  if (today.isBefore(comparisonDate)) {
+    await dotenv.load(fileName: ".env");
+    WidgetsFlutterBinding.ensureInitialized();
+    await SharedPreferencesManager.instance.init();
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]).then((_) {
+      runApp(MyApp());
+    });
+  }
+  print("test is over");
 }
 
 class MyApp extends StatelessWidget {
@@ -52,4 +57,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-
