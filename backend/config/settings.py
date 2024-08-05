@@ -129,7 +129,7 @@ USE_TZ = True
 
 AUTH_USER_MODEL = 'api.User'
 
-# settings.py
+# # settings.py
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
@@ -137,6 +137,13 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'erfank20041382@gmail.com'
 EMAIL_HOST_PASSWORD = 'hbsd vtrk rapm qysy'
 DEFAULT_FROM_EMAIL = 'erfank20041382gmail.com'
+
+# EMAIL_BACKEND='django.core.mail.backends.smtp.EmailBackend'
+# EMAIL_HOST='mail.chabokan.net'
+# EMAIL_PORT=587
+# EMAIL_HOST_USER='erfank20041382@gmail.com'
+# EMAIL_HOST_PASSWORD='vfjbih34w9fr8'
+# EMAIL_USE_TLS=True
 
 KAVENEGAR_APIKEY='4F6763536138714F4658476C764D534F6F5A2B48614F463173763364636670796B2B6F502B4371437473383D'
 

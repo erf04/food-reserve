@@ -432,13 +432,14 @@ class FoodAPIView(APIView):
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
     
 
+@api_view(['GET'])
 def send_test_email(request):
     try:
         send_mail(
             'Test Email',
-            'kir dahanet pakdaman',
+            'test',
             'erfank20041382@gmail.com',
-            ['hasan84heydari@gmail.com'],
+            ['erfank20041382@gmail.com'],
             fail_silently=False,
         )
         return HttpResponse("Test email sent.")
@@ -595,14 +596,23 @@ class RegisterView(generics.CreateAPIView):
     permission_classes = [permissions.AllowAny]
 
 
-    def create(self, request, *args, **kwargs):
+    def create(self, request:Request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         try:
             serializer.is_valid(raise_exception=True)
         except ValidationError as e:
-            print(serializer.errors)
-            print(e.detail)
-            return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
+            # print(e.detail)
+            response=e.detail
+            has_username_error=response.get('username')
+            has_email_error=response.get('email')
+            my_status=status.HTTP_400_BAD_REQUEST
+            if has_email_error and has_username_error:
+                my_status=status.HTTP_302_FOUND
+            elif has_username_error:
+                my_status=status.HTTP_303_SEE_OTHER
+            elif has_email_error:
+                my_status=status.HTTP_306_RESERVED
+            return Response(e.detail, status=my_status)
 
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
