@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:application/design/food.dart';
 import 'package:application/design/meal.dart';
 import 'package:application/design/reserve.dart';
@@ -15,6 +18,8 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 
 class Profile extends StatefulWidget {
   const Profile({super.key});
@@ -24,16 +29,121 @@ class Profile extends StatefulWidget {
 }
 
 class _ProfileState extends State<Profile> {
+  Future<void> changeInfo(String firstName, String lastName, String email,
+      String userName, File? profileImage) async {
+    VerifyToken? myVerify = await TokenManager.verifyAccess(context);
+    if (myVerify == VerifyToken.verified) {
+      FormData formData;
+      if (profileImage != null) {
+        String fileName = profileImage!.path.split('/').last;
+        formData = FormData.fromMap({
+          "profile": await MultipartFile.fromFile(profileImage.path,
+              filename: fileName),
+          "first_name": firstName,
+          "last_name": lastName,
+          "email": email,
+          "username": userName
+        });
+      } else {
+        formData = FormData.fromMap({
+          "first_name": firstName,
+          "last_name": lastName,
+          "email": email,
+          "username": userName
+        });
+      }
+      String? myAccess = await TokenManager.getAccessToken();
+      final response = await HttpClient.instance
+          .put("api/user/update/",
+              options: Options(headers: {"Authorization": "JWT $myAccess"}),
+              data: formData)
+          .then((onValue) {
+        print("Success");
+        FadePageRoute.navigateToNextPage(context, Profile());
+      }).catchError((onError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('اطلاعات وارد شده قابل قبول نیست !')),
+        );
+      });
+    }
+  }
+
+  void _showChangeUsernameDialog(User myUser) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('نام کاربری جدید'),
+          content: TextField(
+            controller: controller1,
+            decoration: InputDecoration(labelText: 'نام کاربری'),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                FadePageRoute.navigateToNextPage(context, Profile());
+              },
+              child: Text('بازگشت'),
+            ),
+            TextButton(
+              onPressed: () {
+                changeInfo(myUser.firstName, myUser.lastName, myUser.email,
+                    controller1.text, null);
+              },
+              child: Text('تایید'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showChangeEmailDialog(User myUser) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('ایمیل جدید'),
+          content: TextField(
+            controller: controller2,
+            decoration: InputDecoration(labelText: 'ایمیل جدید'),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+            ],
+          ),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () {
+                FadePageRoute.navigateToNextPage(context, Profile());
+              },
+              child: Text('بازگشت'),
+            ),
+            TextButton(
+              onPressed: () {               
+                changeInfo(myUser.firstName, myUser.lastName, controller2.text,
+                    myUser.userName, null);
+              },
+              child: Text('تایید'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   bool isInHistory = false;
 
   static Future<List<ShiftMeal>> getReserveHistory(BuildContext context) async {
     VerifyToken? myVerify = await TokenManager.verifyAccess(context);
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
-      print(myAccess);
+
       final response = await HttpClient.instance.get("api/get-reservations/",
           options: Options(headers: {"Authorization": "JWT $myAccess"}));
-      print(response.data);
+
       List<ShiftMeal> myList = [];
       for (var i in response.data) {
         Food food1 = Food(
@@ -78,7 +188,7 @@ class _ProfileState extends State<Profile> {
             meal: myMeal,
             shift: myShift,
             isReserved: true);
-        print("Success");
+
         myList.add(temp);
       }
       return myList;
@@ -90,7 +200,7 @@ class _ProfileState extends State<Profile> {
     VerifyToken? myVerify = await TokenManager.verifyAccess(context);
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
-      print(myAccess);
+
       final response = await HttpClient.instance.get("api/profile/",
           options: Options(headers: {"Authorization": "JWT $myAccess"}));
       User myUser = User.fromJson(response.data);
@@ -107,322 +217,331 @@ class _ProfileState extends State<Profile> {
         body: isInHistory ? const ReserveHistory() : getNormalProfileWidget());
   }
 
-  FutureBuilder<User?> getNormalProfileWidget() {
-    return FutureBuilder<User?>(
-        future: getProfile(),
-        builder: (context, snapshot) {
-          if (snapshot.hasError) {
-            return const Center(
-              child: SizedBox(height: 10, child: Text("Something went wrong!")),
-            );
-          } else if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: const CircularProgressIndicator());
-          } else if (snapshot.hasData) {
-            return SafeArea(
-                child: Stack(
-              fit: StackFit.expand,
-              children: [
-                Container(
-                  decoration: const BoxDecoration(
-                    //color: Colors.white,
-                    image: DecorationImage(
-                      image: AssetImage('assets/new4.jpg'),
-                      fit: BoxFit
-                          .cover, // This ensures the image covers the entire background
-                    ),
-                  ),
-                  child: Padding(
-                    padding: EdgeInsets.fromLTRB(
-                        0, 0, 0, MediaQuery.of(context).size.height * 0.7),
-                  ),
-                ),
-                Column(
-                  children: [
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    Stack(
+  final ImagePicker _picker = ImagePicker();
+  bool isInChangePassword = false;
+  bool isInChangeUsername = false;
+  TextEditingController controller1 = TextEditingController();
+  TextEditingController controller2 = TextEditingController();
+
+  Future<void> _pickImage(ImageSource source, User myUser) async {
+    XFile? imagePickerThis = await _picker.pickImage(source: source);
+    File image = File(imagePickerThis!.path);
+    changeInfo(myUser.firstName, myUser.lastName, myUser.email, myUser.userName,
+        image);
+  }
+
+  Widget getNormalProfileWidget() {
+    return SafeArea(
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              //color: Colors.white,
+              image: DecorationImage(
+                image: AssetImage('assets/new4.jpg'),
+                fit: BoxFit
+                    .cover, // This ensures the image covers the entire background
+              ),
+            ),
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                  0, 0, 0, MediaQuery.of(context).size.height * 0.7),
+            ),
+          ),
+          FutureBuilder<User?>(
+              future: getProfile(),
+              builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return const Center(
+                    child: SizedBox(height: 10, child: Text("خطایی رخ داد !")),
+                  );
+                } else if (snapshot.connectionState ==
+                    ConnectionState.waiting) {
+                  return Center(child: const CircularProgressIndicator());
+                } else if (snapshot.hasData) {
+                  return SingleChildScrollView(
+                    physics: BouncingScrollPhysics(),
+                    child: Column(
                       children: [
-                        CircleAvatar(
-                          backgroundColor: Colors.deepOrange,
-                          radius: 80,
-                          child: ClipOval(
-                            child: Container(
-                              child: CachedNetworkImage(
-                                  imageUrl:
-                                      'http://10.0.2.2:8000${snapshot.data?.profilePhoto}',
-                                  placeholder: (context, url) => const Center(
-                                      child: Center(
-                                          child: CircularProgressIndicator())),
-                                  errorWidget: (context, url, error) =>
-                                      Center(child: Icon(Icons.error)),
-                                  fit: BoxFit.cover,
-                                  width: 160,
-                                  height: 160),
-                            ),
-                          ),
+                        const SizedBox(
+                          height: 20,
                         ),
-                        Positioned(
-                          bottom: 4,
-                          right: 4,
-                          child: InkWell(
-                            onTap: () {},
-                            child: ClipRRect(
-                              borderRadius:
-                                  const BorderRadius.all(Radius.circular(40)),
-                              child: Image.asset(
-                                'assets/cameraIcon.jpg',
-                                width: 40,
-                                height: 40,
+                        Stack(
+                          children: [
+                            CircleAvatar(
+                              backgroundColor: Colors.deepOrange,
+                              radius: 80,
+                              child: ClipOval(
+                                child: Container(
+                                  child: CachedNetworkImage(
+                                      imageUrl:
+                                          'https://reserve.chbk.run${snapshot.data?.profilePhoto}',
+                                      placeholder: (context, url) => const Center(
+                                          child: Center(
+                                              child:
+                                                  CircularProgressIndicator())),
+                                      errorWidget: (context, url, error) =>
+                                          Center(child: Icon(Icons.error)),
+                                      fit: BoxFit.cover,
+                                      width: 160,
+                                      height: 160),
+                                ),
                               ),
                             ),
-                          ),
+                            Positioned(
+                              bottom: 4,
+                              right: 4,
+                              child: InkWell(
+                                onTap: () {
+                                  _pickImage(
+                                      ImageSource.gallery, snapshot.data!);
+                                },
+                                child: ClipRRect(
+                                  borderRadius: const BorderRadius.all(
+                                      Radius.circular(40)),
+                                  child: Image.asset(
+                                    'assets/cameraIcon.jpg',
+                                    width: 40,
+                                    height: 40,
+                                  ),
+                                ),
+                              ),
+                            )
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 20,
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: TextButton(
+                              onPressed: () {},
+                              child: Container(
+                                width: MediaQuery.of(context).size.width * 0.7,
+                                height: 40,
+                                decoration: const BoxDecoration(
+                                    color: Color.fromARGB(205, 255, 255, 255),
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(24))),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const SizedBox(
+                                      width: 12,
+                                    ),
+                                    Text(snapshot.data!.userName,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge!
+                                            .copyWith(
+                                                fontWeight: FontWeight.bold)),
+                                    IconButton(
+                                        onPressed: () {
+                                          _showChangeUsernameDialog(
+                                              snapshot.data!);
+                                        },
+                                        icon: const Icon(CupertinoIcons.pen))
+                                  ],
+                                ),
+                              )),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                          child: TextButton(
+                              onPressed: () {},
+                              child: Container(
+                                width: MediaQuery.of(context).size.width * 0.7,
+                                height: 40,
+                                decoration: const BoxDecoration(
+                                    color: Color.fromARGB(205, 255, 255, 255),
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(24))),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const SizedBox(
+                                      width: 12,
+                                    ),
+                                    Text(snapshot.data!.email,
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyMedium),
+                                    IconButton(
+                                        onPressed: () {
+                                          _showChangeEmailDialog(
+                                              snapshot.data!);
+                                        },
+                                        icon: const Icon(CupertinoIcons.pen))
+                                  ],
+                                ),
+                              )),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
+                          child: TextButton(
+                              onPressed: () {},
+                              child: Container(
+                                width: MediaQuery.of(context).size.width * 0.7,
+                                height: 40,
+                                decoration: const BoxDecoration(
+                                    color: Color.fromARGB(205, 255, 255, 255),
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(24))),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const SizedBox(
+                                      width: 12,
+                                    ),
+                                    Text(
+                                      'تاریخچه رزرو',
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .bodyLarge!
+                                          .copyWith(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 18),
+                                    ),
+                                    IconButton(
+                                        onPressed: () {
+                                          setState(() {
+                                            isInHistory = true;
+                                          });
+                                        },
+                                        icon: const Icon(
+                                            CupertinoIcons.bookmark)),
+                                  ],
+                                ),
+                              )),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                          child: TextButton(
+                              onPressed: () {},
+                              child: Container(
+                                width: MediaQuery.of(context).size.width * 0.7,
+                                height: 40,
+                                decoration: const BoxDecoration(
+                                    color: Color.fromARGB(205, 255, 255, 255),
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(24))),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const SizedBox(
+                                      width: 12,
+                                    ),
+                                    Text('وضعیت نظارت',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge!
+                                            .copyWith(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 18)),
+                                    Icon(
+                                      snapshot.data!.isSuperVisor
+                                          ? CupertinoIcons.check_mark
+                                          : CupertinoIcons.xmark,
+                                    ),
+                                    const SizedBox(
+                                      width: 4,
+                                    )
+                                  ],
+                                ),
+                              )),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+                          child: TextButton(
+                              onPressed: () {},
+                              child: Container(
+                                width: MediaQuery.of(context).size.width * 0.7,
+                                height: 40,
+                                decoration: const BoxDecoration(
+                                    color: Color.fromARGB(205, 255, 255, 255),
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(24))),
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    const SizedBox(
+                                      width: 12,
+                                    ),
+                                    Text('وضعیت مدیریت',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge!
+                                            .copyWith(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 18)),
+                                    Icon(
+                                      snapshot.data!.isShiftManager
+                                          ? CupertinoIcons.check_mark
+                                          : CupertinoIcons.xmark,
+                                    ),
+                                    const SizedBox(
+                                      width: 4,
+                                    )
+                                  ],
+                                ),
+                              )),
                         )
                       ],
                     ),
-                    const SizedBox(
-                      height: 20,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: TextButton(
-                          onPressed: () {},
-                          child: Container(
-                            width: MediaQuery.of(context).size.width * 0.7,
-                            height: 40,
-                            decoration: const BoxDecoration(
-                                color: Color.fromARGB(205, 255, 255, 255),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(24))),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const SizedBox(
-                                  width: 12,
-                                ),
-                                Text(snapshot.data!.userName,
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyLarge!
-                                        .copyWith(fontWeight: FontWeight.bold)),
-                                IconButton(
-                                    onPressed: () {
-                                      //todo change user name
-                                    },
-                                    icon: const Icon(CupertinoIcons.pen))
-                              ],
-                            ),
-                          )),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
-                      child: TextButton(
-                          onPressed: () {},
-                          child: Container(
-                            width: MediaQuery.of(context).size.width * 0.7,
-                            height: 40,
-                            decoration: const BoxDecoration(
-                                color: Color.fromARGB(205, 255, 255, 255),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(24))),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const SizedBox(
-                                  width: 12,
-                                ),
-                                Text(
-                                  'Change Password',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge!
-                                      .copyWith(fontWeight: FontWeight.bold),
-                                ),
-                                IconButton(
-                                    onPressed: () {
-                                      //todo change user name
-                                    },
-                                    icon: const Icon(CupertinoIcons.pen)),
-                              ],
-                            ),
-                          )),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
-                      child: TextButton(
-                          onPressed: () {},
-                          child: Container(
-                            width: MediaQuery.of(context).size.width * 0.7,
-                            height: 40,
-                            decoration: const BoxDecoration(
-                                color: Color.fromARGB(205, 255, 255, 255),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(24))),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const SizedBox(
-                                  width: 12,
-                                ),
-                                Text('Change Profile Image',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyLarge!
-                                        .copyWith(fontWeight: FontWeight.bold)),
-                                IconButton(
-                                    onPressed: () {
-                                      //todo change user name
-                                    },
-                                    icon: const Icon(CupertinoIcons.pen))
-                              ],
-                            ),
-                          )),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 0),
-                      child: TextButton(
-                          onPressed: () {},
-                          child: Container(
-                            width: MediaQuery.of(context).size.width * 0.7,
-                            height: 40,
-                            decoration: const BoxDecoration(
-                                color: Color.fromARGB(205, 255, 255, 255),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(24))),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const SizedBox(
-                                  width: 12,
-                                ),
-                                Text(
-                                  'See food records',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodyLarge!
-                                      .copyWith(fontWeight: FontWeight.bold),
-                                ),
-                                IconButton(
-                                    onPressed: () {
-                                      setState(() {
-                                        isInHistory = true;
-                                      });
-                                    },
-                                    icon: const Icon(CupertinoIcons.bookmark)),
-                              ],
-                            ),
-                          )),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-                      child: TextButton(
-                          onPressed: () {},
-                          child: Container(
-                            width: MediaQuery.of(context).size.width * 0.7,
-                            height: 40,
-                            decoration: const BoxDecoration(
-                                color: Color.fromARGB(205, 255, 255, 255),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(24))),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const SizedBox(
-                                  width: 12,
-                                ),
-                                Text('Currently In Charge',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyLarge!
-                                        .copyWith(fontWeight: FontWeight.bold)),
-                                Icon(
-                                  snapshot.data!.isSuperVisor
-                                      ? CupertinoIcons.check_mark
-                                      : CupertinoIcons.xmark,
-                                ),
-                                const SizedBox(
-                                  width: 4,
-                                )
-                              ],
-                            ),
-                          )),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-                      child: TextButton(
-                          onPressed: () {},
-                          child: Container(
-                            width: MediaQuery.of(context).size.width * 0.7,
-                            height: 40,
-                            decoration: const BoxDecoration(
-                                color: Color.fromARGB(205, 255, 255, 255),
-                                borderRadius:
-                                    BorderRadius.all(Radius.circular(24))),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                const SizedBox(
-                                  width: 12,
-                                ),
-                                Text('Currently Is Manager',
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .bodyLarge!
-                                        .copyWith(fontWeight: FontWeight.bold)),
-                                Icon(
-                                  snapshot.data!.isShiftManager
-                                      ? CupertinoIcons.check_mark
-                                      : CupertinoIcons.xmark,
-                                ),
-                                const SizedBox(
-                                  width: 4,
-                                )
-                              ],
-                            ),
-                          )),
-                    )
-                  ],
-                )
-              ],
-            ));
-          } else {
-            return const Center(
-              child: SizedBox(height: 10, child: Text("Something went wrong!")),
-            );
-          }
-        });
+                  );
+                } else {
+                  return const Center(
+                    child: SizedBox(height: 10, child: Text("خطایی رخ داد !")),
+                  );
+                }
+              }),
+        ],
+      ),
+    );
   }
 
   AppBar myAppBar(BuildContext context, String title, bool inHistory) {
     return AppBar(
       foregroundColor: Colors.white,
-      title: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [
-          IconButton(
-              onPressed: () {
-                if (inHistory == true) {
-                  setState(() {
-                    this.isInHistory = false;
-                  });
-                } else {
-                  FadePageRoute.navigateToNextPage(context, MainPage());
-                }
-                //Navigator.pushReplacement(context, MyHomePage(title: ''));
-              },
-              icon: const Icon(
-                CupertinoIcons.back,
-                size: 40,
-                color: Color.fromARGB(255, 2, 16, 43),
-              )),
-          Text(
-            title,
-            style: Theme.of(context)
-                .textTheme
-                .bodyMedium!
-                .copyWith(fontSize: 25, fontWeight: FontWeight.bold),
-          ),
-          FutureBuilder<User?>(
+      leadingWidth: 120,
+      leading: IconButton(
+          onPressed: () {
+            if (inHistory == true) {
+              setState(() {
+                this.isInHistory = false;
+              });
+            } else {
+              FadePageRoute.navigateToNextPage(context, MainPage());
+            }
+            //Navigator.pushReplacement(context, MyHomePage(title: ''));
+          },
+          icon: const Icon(
+            CupertinoIcons.back,
+            size: 40,
+            color: Color.fromARGB(255, 2, 16, 43),
+          )),
+      title: Center(
+        child: Text(
+          title,
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium!
+              .copyWith(fontSize: 25, fontWeight: FontWeight.bold),
+        ),
+      ),
+      backgroundColor: Colors.white,
+      actions: [
+        SizedBox(
+          width: 30,
+        ),
+        Center(
+          child: FutureBuilder<User?>(
               future: getProfile(),
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
@@ -437,7 +556,7 @@ class _ProfileState extends State<Profile> {
                         child: Container(
                           child: CachedNetworkImage(
                               imageUrl:
-                                  'http://10.0.2.2:8000${snapshot.data?.profilePhoto}',
+                                  'https://reserve.chbk.run${snapshot.data?.profilePhoto}',
                               placeholder: (context, url) => const Center(
                                   child: Center(
                                       child: CircularProgressIndicator())),
@@ -463,9 +582,11 @@ class _ProfileState extends State<Profile> {
                       icon: Icon(CupertinoIcons.profile_circled));
                 }
               }),
-        ],
-      ),
-      backgroundColor: Colors.white,
+        ),
+        SizedBox(
+          width: 50,
+        )
+      ],
     );
   }
 }
@@ -510,7 +631,7 @@ class _ReserveHistoryState extends State<ReserveHistory> {
                                         .bodyLarge!
                                         .copyWith(color: Colors.white)),
                                 Text(
-                                  "Something went wrong!",
+                                  "خطایی رخ داد !",
                                   style: Theme.of(context)
                                       .textTheme
                                       .bodyLarge!
@@ -521,10 +642,13 @@ class _ReserveHistoryState extends State<ReserveHistory> {
                       );
                     } else if (snapshot.connectionState ==
                         ConnectionState.waiting) {
-                      return Center(child: const CircularProgressIndicator());
+                      return Column(
+                        children: [
+                          SizedBox(height: 60,),
+                          Center(child: const CircularProgressIndicator()),
+                        ],
+                      );
                     } else if (snapshot.hasData) {
-                      //print("HAYAAAAAAAAAAAAAaaa");
-                      //print(snapshot.data!.length);
                       if (snapshot.data!.isEmpty) {
                         return Container(
                           color: Colors.white60,
@@ -540,7 +664,6 @@ class _ReserveHistoryState extends State<ReserveHistory> {
                           child: ListView.builder(
                               itemCount: snapshot.data!.length,
                               itemBuilder: (context, index) {
-                                //print(snapshot.data![index]);
                                 return Padding(
                                   padding: const EdgeInsets.all(16.0),
                                   child: InkWell(
@@ -620,24 +743,96 @@ class _ReserveHistoryState extends State<ReserveHistory> {
                     });
                   },
                   child: Text(
-                    'Shift : ${shiftMeal[index].shift.shiftName}',
+                    'شیفت : ${shiftMeal[index].shift.shiftName}',
                     style: Theme.of(context)
                         .textTheme
                         .titleLarge!
                         .copyWith(fontSize: 24, fontWeight: FontWeight.bold),
                   )),
-              TextButton(
-                  onPressed: () {},
-                  child: Text('foods: ${shiftMeal[index].meal.food.name}',
-                      style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                          fontSize: 19, fontWeight: FontWeight.w300))),
+              Text('غذا : ${shiftMeal[index].meal.food.name}',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleLarge!
+                      .copyWith(fontSize: 19, fontWeight: FontWeight.w300)),
               const SizedBox(
-                height: 6,
+                height: 8,
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width / 9,
+                  ),
+                  Container(
+                    padding: EdgeInsets.fromLTRB(
+                        MediaQuery.of(context).size.width * 1 / 8, 0, 0, 0),
+                    width: MediaQuery.of(context).size.width * 5 / 8,
+                    height: 30,
+                    child: ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        itemCount: shiftMeal[index].meal.drink.length + 1,
+                        scrollDirection: Axis.horizontal,
+                        itemBuilder: (context, index1) {
+                          if (index1 == 0) {
+                            String emptyString = 'نوشیدنی ها : ';
+                            String myString = 'نوشیدنی موجود نمی باشد !';
+
+                            return Container(
+                                margin: const EdgeInsets.fromLTRB(4, 2, 4, 2),
+                                child: Text(
+                                    shiftMeal[index].meal.drink.length == 0
+                                        ? myString
+                                        : emptyString,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge!
+                                        .copyWith(
+                                            fontSize: 19,
+                                            fontWeight: FontWeight.w300)));
+                          }
+                          if (index1 == shiftMeal[index].meal.drink.length) {
+                            return Container(
+                                margin: const EdgeInsets.fromLTRB(4, 2, 4, 2),
+                                child: Text(
+                                    shiftMeal[index]
+                                        .meal
+                                        .drink[index1 - 1]
+                                        .name,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge!
+                                        .copyWith(
+                                            fontSize: 19,
+                                            fontWeight: FontWeight.w300)));
+                          } else {
+                            return Container(
+                                margin: const EdgeInsets.fromLTRB(4, 2, 4, 2),
+                                child: Text(
+                                    '${shiftMeal[index].meal.drink[index1 - 1].name} -',
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleLarge!
+                                        .copyWith(
+                                            fontSize: 19,
+                                            fontWeight: FontWeight.w300)));
+                          }
+                        }),
+                  ),
+                ],
+              ),
+
+              // Text('drinks: ${shiftMeal[index].meal.food.name}',
+              //   style: Theme.of(context)
+              //       .textTheme
+              //       .titleLarge!
+              //       .copyWith(fontSize: 19, fontWeight: FontWeight.w300)),
+              const SizedBox(
+                height: 8,
               ),
               Text(
                   shiftMeal[index].meal.diet == null
-                      ? 'diet: no diet food available'
-                      : 'diet: ${shiftMeal[index].meal.diet!.name}',
+                      ? 'رژیمی : غذای رژیمی موجود نیست'
+                      : 'رژیمی : ${shiftMeal[index].meal.diet!.name}',
                   style: Theme.of(context)
                       .textTheme
                       .titleLarge!
@@ -647,16 +842,8 @@ class _ReserveHistoryState extends State<ReserveHistory> {
               ),
               Text(
                   shiftMeal[index].meal.desert == null
-                      ? 'dessert: no dessert food available'
-                      : 'dessert: ${shiftMeal[index].meal.desert!.name}',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleLarge!
-                      .copyWith(fontSize: 19, fontWeight: FontWeight.w300)),
-              const SizedBox(
-                height: 8,
-              ),
-              Text(shiftMeal[index].date,
+                      ? 'دسر : دسر موجود نیست'
+                      : 'دسر : ${shiftMeal[index].meal.desert!.name}',
                   style: Theme.of(context)
                       .textTheme
                       .titleLarge!
@@ -672,9 +859,13 @@ class _ReserveHistoryState extends State<ReserveHistory> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
-        Text(shiftMeals[index].shift.shiftName,
+        Text(shiftMeals[index].meal.food.name,
             style:
                 Theme.of(context).textTheme.bodyLarge!.copyWith(fontSize: 19)),
+        Text(
+          shiftMeals[index].meal.dailyMeal,
+          style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontSize: 19),
+        ),
         Text(
           shiftMeals[index].date,
           style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontSize: 19),

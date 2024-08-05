@@ -54,7 +54,7 @@ class _MealCreationPageState extends State<MealCreationPage> {
       String? myAccess = await TokenManager.getAccessToken();
       final response = await HttpClient.instance.get('api/shiftmeal/create/',
           options: Options(headers: {'Authorization': 'JWT $myAccess'}));
-      //print(response.data);
+      
       if (response.statusCode == 200) {
         setState(() {
           for (var i in response.data['meals']) {
@@ -98,7 +98,7 @@ class _MealCreationPageState extends State<MealCreationPage> {
     VerifyToken? myVerify = await TokenManager.verifyAccess(context);
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
-      //print(myAccess);
+      
       final response = await HttpClient.instance.get("api/profile/",
           options: Options(headers: {"Authorization": "JWT $myAccess"}));
       User myUser = User.fromJson(response.data);
@@ -111,7 +111,7 @@ class _MealCreationPageState extends State<MealCreationPage> {
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
       selectedDate = selectedDate!.replaceAll('/', '-');
-      //print("WHAT THE FUCK");
+      
       final response = await HttpClient.instance.post(
         'api/shiftmeal/filter/',
         options: Options(headers: {'Authorization': 'JWT $myAccess'}),
@@ -147,7 +147,7 @@ class _MealCreationPageState extends State<MealCreationPage> {
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
       selectedDate = selectedDate!.replaceAll('/', '-');
-      //print("WHAT THE FUCK");
+      
       List<int> mealId = [];
       for (var i in selectedMeals) {
         mealId.add(i!.id);
@@ -209,7 +209,7 @@ class _MealCreationPageState extends State<MealCreationPage> {
                 setState(() {
                   selectedMeals.add(selectedMeal);
                   this.selectedMeals.add(selectedMeal);
-                  //print(selectedMeals);
+                  
                 });
               }
             },
@@ -298,11 +298,8 @@ class _MealCreationPageState extends State<MealCreationPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        foregroundColor: Colors.white,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            IconButton(
+        leadingWidth: 110,
+        leading: IconButton(
                 onPressed: () {
                   FadePageRoute.navigateToNextPage(context, MainPage());
                 },
@@ -311,6 +308,11 @@ class _MealCreationPageState extends State<MealCreationPage> {
                   size: 40,
                   color: Color.fromARGB(255, 2, 16, 43),
                 )),
+        foregroundColor: Colors.white,
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            
             Text(
               'ایجاد وعده',
               style: Theme.of(context)
@@ -318,7 +320,12 @@ class _MealCreationPageState extends State<MealCreationPage> {
                   .bodyMedium!
                   .copyWith(fontSize: 25, fontWeight: FontWeight.bold),
             ),
-            FutureBuilder<User?>(
+            
+          ],
+        ),
+        actions: [
+          SizedBox(width: 20,),
+          FutureBuilder<User?>(
                 future: getProfileForMainPage(),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
@@ -333,7 +340,7 @@ class _MealCreationPageState extends State<MealCreationPage> {
                           child: Container(
                             child: CachedNetworkImage(
                                 imageUrl:
-                                    'http://10.0.2.2:8000${snapshot.data?.profilePhoto}',
+                                    'https://reserve.chbk.run${snapshot.data?.profilePhoto}',
                                 placeholder: (context, url) => const Center(
                                     child: CircularProgressIndicator()),
                                 errorWidget: (context, url, error) =>
@@ -358,8 +365,8 @@ class _MealCreationPageState extends State<MealCreationPage> {
                         icon: Icon(CupertinoIcons.profile_circled));
                   }
                 }),
-          ],
-        ),
+                SizedBox(width: 50,)
+        ],
         backgroundColor: Colors.white,
       ),
       body: SafeArea(
@@ -540,7 +547,7 @@ class _MealCreationPageState extends State<MealCreationPage> {
                             EdgeInsets.symmetric(horizontal: 15, vertical: 15),
                       ),
                       onPressed: () async {
-                        print(selectedMeals.length);
+                        
                         if (_selectedDate != null &&
                             (!selectedMeals.isEmpty) &&
                             selectedShift != null) {

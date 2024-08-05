@@ -58,7 +58,7 @@ class _MealSelectionPageState extends State<MealSelectionPage> {
       String? myAccess = await TokenManager.getAccessToken();
       final response = await HttpClient.instance.get('api/meal/create/',
           options: Options(headers: {'Authorization': 'JWT $myAccess'}));
-      print(response.data);
+      
       if (response.statusCode == 200) {
         setState(() {
           for (var i in response.data['foods']) {
@@ -90,7 +90,7 @@ class _MealSelectionPageState extends State<MealSelectionPage> {
     VerifyToken? myVerify = await TokenManager.verifyAccess(context);
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
-      //print(myAccess);
+      
       final response = await HttpClient.instance.get("api/profile/",
           options: Options(headers: {"Authorization": "JWT $myAccess"}));
       User myUser = User.fromJson(response.data);
@@ -149,11 +149,8 @@ class _MealSelectionPageState extends State<MealSelectionPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        foregroundColor: Colors.white,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: [
-            IconButton(
+        leadingWidth: 90,
+        leading: IconButton(
                 onPressed: () {
                   FadePageRoute.navigateToNextPage(context, MealCreationPage());
                 },
@@ -162,14 +159,17 @@ class _MealSelectionPageState extends State<MealSelectionPage> {
                   size: 40,
                   color: Color.fromARGB(255, 2, 16, 43),
                 )),
-            Text(
-              'ایجاد وعده جدید',
-              style: Theme.of(context)
-                  .textTheme
-                  .bodyMedium!
-                  .copyWith(fontSize: 25, fontWeight: FontWeight.bold),
-            ),
-            FutureBuilder<User?>(
+        foregroundColor: Colors.white,
+        title: Text(
+          'ایجاد وعده جدید',
+          style: Theme.of(context)
+              .textTheme
+              .bodyMedium!
+              .copyWith(fontSize: 25, fontWeight: FontWeight.bold),
+        ),
+        actions: [
+          
+           FutureBuilder<User?>(
                 future: getProfileForMainPage(),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
@@ -184,7 +184,7 @@ class _MealSelectionPageState extends State<MealSelectionPage> {
                           child: Container(
                             child: CachedNetworkImage(
                                 imageUrl:
-                                    'http://10.0.2.2:8000${snapshot.data?.profilePhoto}',
+                                    'https://reserve.chbk.run${snapshot.data?.profilePhoto}',
                                 placeholder: (context, url) => const Center(
                                     child: CircularProgressIndicator()),
                                 errorWidget: (context, url, error) =>
@@ -209,8 +209,8 @@ class _MealSelectionPageState extends State<MealSelectionPage> {
                         icon: Icon(CupertinoIcons.profile_circled));
                   }
                 }),
-          ],
-        ),
+                SizedBox(width: 30,)
+        ],
         backgroundColor: Colors.white,
       ),
       body: SafeArea(

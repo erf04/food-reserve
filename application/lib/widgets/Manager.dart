@@ -75,8 +75,7 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
 
     final fromDateIso = fromDate!.toJalaliDateTime().substring(0, 10);
     final toDateIso = toDate!.toJalaliDateTime().substring(0, 10);
-    print(fromDateIso);
-    print(toDateIso);
+
 
     VerifyToken? myVerify = await TokenManager.verifyAccess(context);
     if (myVerify == VerifyToken.verified) {
@@ -104,7 +103,7 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
     VerifyToken? myVerify = await TokenManager.verifyAccess(context);
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
-      //print(myAccess);
+      
       final response = await HttpClient.instance.get("api/profile/",
           options: Options(headers: {"Authorization": "JWT $myAccess"}));
       User myUser = User.fromJson(response.data);
@@ -120,10 +119,8 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
     return Scaffold(
       appBar: AppBar(
         foregroundColor: Colors.white,
-        title: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            IconButton(
+        leadingWidth: 90,
+        leading: IconButton(
               onPressed: () {
                 FadePageRoute.navigateToNextPage(context, MainPage());
               },
@@ -133,6 +130,10 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
                 color: Color.fromARGB(255, 2, 16, 43),
               ),
             ),
+        title: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            
             Text(
               'صفحه سرپرست',
               style: Theme.of(context)
@@ -140,7 +141,12 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
                   .bodyMedium!
                   .copyWith(fontSize: 25, fontWeight: FontWeight.bold),
             ),
-            FutureBuilder<User?>(
+            
+          ],
+        ),
+        actions: [
+          SizedBox(width: 10,),
+          FutureBuilder<User?>(
                 future: getProfileForMainPage(),
                 builder: (context, snapshot) {
                   if (snapshot.hasData) {
@@ -155,7 +161,7 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
                           child: Container(
                             child: CachedNetworkImage(
                                 imageUrl:
-                                    'http://10.0.2.2:8000${snapshot.data?.profilePhoto}',
+                                    'https://reserve.chbk.run${snapshot.data?.profilePhoto}',
                                 placeholder: (context, url) => const Center(
                                     child: CircularProgressIndicator()),
                                 errorWidget: (context, url, error) =>
@@ -179,8 +185,8 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
                         icon: Icon(CupertinoIcons.profile_circled));
                   }
                 }),
-          ],
-        ),
+                SizedBox(width: 50,)
+        ],
         backgroundColor: Colors.white,
       ),
       body: Stack(
@@ -214,11 +220,11 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
                           height: screenHeight * 0.01,
                         ),
                         DropdownButtonFormField<User>(
-                          decoration: InputDecoration(labelText: 'Select Supervisor'),
+                          decoration: InputDecoration(label: Text('انتخاب ناظر', style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight:FontWeight.bold, fontSize: 18 ))),
                           items: snapshot.data!.map((User user) {
                             return DropdownMenuItem<User>(
                               value: user,
-                              child: Text(user.userName),
+                              child: Text(user.firstName + ' ' + user.lastName),
                             );
                           }).toList(),
                           onChanged: (User? newValue) {
@@ -233,7 +239,7 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
                           children: [
                             Expanded(
                               child: TextFormField(
-                                decoration: InputDecoration(labelText: 'From Date'),
+                                decoration: InputDecoration(label: Text('تاریخ شروع', style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight:FontWeight.bold, fontSize: 18 ))),
                                 readOnly: true,
                                 onTap: () => _selectDate(context, true),
                                 controller: TextEditingController(
@@ -252,7 +258,7 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
                           children: [
                             Expanded(
                               child: TextFormField(
-                                decoration: InputDecoration(labelText: 'To Date'),
+                                decoration: InputDecoration(label: Text('شروع پایان', style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight:FontWeight.bold, fontSize: 18 ))),
                                 readOnly: true,
                                 onTap: () => _selectDate(context, false),
                                 controller: TextEditingController(
@@ -266,11 +272,16 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
                             ),
                           ],
                         ),
-                        SizedBox(height: screenHeight * 0.03),
+                        SizedBox(height: screenHeight * 0.05),
                         Center(
                           child: ElevatedButton(
                             onPressed: _submit,
-                            child: Text('Assign Supervisor'),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Center(child: Text('تایید اطلاعات', style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight:FontWeight.bold, fontSize: 20 ),)),
+                              ],
+                            ),
                           ),
                         ),
                       ],

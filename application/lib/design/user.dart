@@ -9,16 +9,17 @@ class User {
   bool isShiftManager;
   String firstName;
   String lastName;
+  String email;
 
-  User({
-    required this.id,
-    required this.userName,
-    required this.profilePhoto,
-    required this.isSuperVisor,
-    required this.isShiftManager,
-    required this.firstName,
-    required this.lastName,
-  });
+  User(
+      {required this.id,
+      required this.userName,
+      required this.profilePhoto,
+      required this.isSuperVisor,
+      required this.isShiftManager,
+      required this.firstName,
+      required this.lastName,
+      required this.email});
 
   User copyWith({
     int? id,
@@ -28,6 +29,7 @@ class User {
     bool? isShiftManager,
     String? firstName,
     String? lastName,
+    String? email,
   }) {
     return User(
       id: id ?? this.id,
@@ -37,6 +39,7 @@ class User {
       isShiftManager: isShiftManager ?? this.isShiftManager,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
+      email: email ?? this.email
     );
   }
 
@@ -47,6 +50,7 @@ class User {
       'profile': profilePhoto,
       'is_supervisor': isSuperVisor,
       'is_shift_manager': isShiftManager,
+      'email': email,
       'first_name': firstName,
       'last_name': lastName,
     };
@@ -61,6 +65,7 @@ class User {
       isShiftManager: map['is_shift_manager'] as bool,
       firstName: map['first_name'] as String,
       lastName: map['last_name'] as String,
+      email: map['email'] as String
     );
   }
 
@@ -81,7 +86,8 @@ class User {
         other.isSuperVisor == isSuperVisor &&
         other.isShiftManager == isShiftManager &&
         other.firstName == firstName &&
-        other.lastName == lastName;
+        other.lastName == lastName &&
+        other.email == email;
   }
 
   @override
@@ -92,6 +98,7 @@ class User {
         isSuperVisor.hashCode ^
         isShiftManager.hashCode ^
         firstName.hashCode ^
-        lastName.hashCode;
+        lastName.hashCode ^
+        email.hashCode ;
   }
 }

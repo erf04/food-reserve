@@ -4,9 +4,28 @@ import 'package:application/repository/HttpClient.dart';
 import 'package:application/repository/tokenManager.dart';
 import 'package:application/widgets/MainPage.dart';
 import 'package:application/widgets/SoftenPageTransition.dart';
+import 'package:application/widgets/forgotPassword.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
+import 'package:flutter/services.dart';
+
+class EnglishInputFormatter extends TextInputFormatter {
+  @override
+  TextEditingValue formatEditUpdate(
+      TextEditingValue oldValue, TextEditingValue newValue) {
+    // Regular expression for English characters (letters, numbers, and some punctuation)
+    final RegExp regExp = RegExp(r'^[a-zA-Z0-9\s\.,?!]*$');
+
+    // Check if the new value matches the regular expression
+    if (regExp.hasMatch(newValue.text)) {
+      return newValue;
+    }
+
+    // If not, return the old value
+    return oldValue;
+  }
+}
 
 class LoginSignUp extends StatefulWidget {
   const LoginSignUp({super.key});
@@ -27,45 +46,58 @@ class _LoginSignUpState extends State<LoginSignUp> {
   TextEditingController myController4 = TextEditingController();
   TextEditingController myController5 = TextEditingController();
   TextEditingController myController6 = TextEditingController();
-  static Future<bool> getAuthLogin(
+  static Future<void> getAuthLogin(
       String myUser, String myPass, context) async {
-    final response = await HttpClient.instance.post('api/login/',
-        data: {'username': myUser, 'password': myPass});
-    if (response.statusCode == 200) {
-      TokenManager.saveTokens(
-          response.data["access"], response.data["refresh"]);
-      FadePageRoute.navigateToNextPage(context, MainPage());
-      return false;
-    } else {
-      return true;
+    try {
+      final response = await HttpClient.instance.post('api/login/',
+          data: {'username': myUser, 'password': myPass}).then((response) {
+        TokenManager.saveTokens(
+            response.data["access"], response.data["refresh"]);
+        FadePageRoute.navigateToNextPage(context, MainPage());
+        print(response.data);
+      });
+    } on DioException catch (e) {
+      if (e.response != null) {
+        print(e.response?.data);
+        print('Error status code: ${e.response?.statusCode}');
+        print('Error data: ${e.response?.data}');
+      } else {
+        print('Error message: ${e.message}');
+      }
     }
   }
 
-  static Future<bool> getAuthSignUp(
+  static Future<void> getAuthSignUp(
       String myUser,
       String myPass,
       String firstName,
       String lastName,
       String email,
       BuildContext context) async {
-    final response;
-    response = await HttpClient.instance.post('api/register/',
-        options: Options(headers: {'App-Token': dotenv.env['API_KEY']}),
-        data: {
-          'username': myUser,
-          'password': myPass,
-          'first_name': firstName,
-          'last_name': lastName,
-          'email': email
-        }).catchError((error) {
-      return true;
-    });
-    if (response.statusCode == 201) {
-      _LoginSignUpState.getAuthLogin(myUser, myPass, context);
-      return false;
-    } else {
-      
-      return true;
+    try {
+      firstName = firstName[0].toUpperCase() + firstName.substring(1).toLowerCase();
+      lastName = lastName[0].toUpperCase() + lastName.substring(1).toLowerCase();
+
+      final response;
+      response = await HttpClient.instance.post('api/register/',
+          options: Options(headers: {'App-Token': dotenv.env['API_KEY']}),
+          data: {
+            'username': myUser,
+            'password': myPass,
+            'first_name': firstName,
+            'last_name': lastName,
+            'email': email
+          }).then((onValue) {
+        _LoginSignUpState.getAuthLogin(myUser, myPass, context);
+        print(onValue);
+      });
+    } on DioException catch (e) {
+      if (e.response != null) {
+        print('Error status code: ${e.response?.statusCode}');
+        print('Error data: ${e.response?.data}');
+      } else {
+        print('Error message: ${e.message}');
+      }
     }
   }
 
@@ -124,7 +156,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
                 });
               },
               child: Text(
-                "Login",
+                "ورود",
                 style: Theme.of(context).textTheme.bodySmall!.copyWith(
                     fontWeight: FontWeight.bold,
                     fontSize: 32,
@@ -138,7 +170,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
                 });
               },
               child: Text(
-                "Sign up",
+                "ثبت نام",
                 style: Theme.of(context).textTheme.bodySmall!.copyWith(
                     fontWeight: FontWeight.bold,
                     fontSize: 32,
@@ -155,6 +187,9 @@ class _LoginSignUpState extends State<LoginSignUp> {
             controller: myController1,
             enableSuggestions: true,
             autocorrect: true,
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+            ],
             decoration: const InputDecoration(
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(16)),
@@ -163,12 +198,15 @@ class _LoginSignUpState extends State<LoginSignUp> {
                 contentPadding:
                     EdgeInsets.symmetric(vertical: 10.0, horizontal: 10),
                 filled: true,
-                label: Text('username')),
+                label: Text('نام کاربری')),
           ),
           const SizedBox(
             height: 20,
           ),
           TextField(
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+            ],
             controller: myController2,
             enableSuggestions: false,
             autocorrect: false,
@@ -187,12 +225,12 @@ class _LoginSignUpState extends State<LoginSignUp> {
                         obscurity = !obscurity;
                       });
                     },
-                    child: Text(obscurity ? 'show' : 'hide',
+                    child: Text(obscurity ? 'نمایش' : 'پنهان',
                         style: Theme.of(context).textTheme.titleLarge!.copyWith(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
                             color: Colors.blueGrey))),
-                label: const Text('Password')),
+                label: const Text('پسورد')),
           ),
           const SizedBox(
             height: 20,
@@ -200,7 +238,11 @@ class _LoginSignUpState extends State<LoginSignUp> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("No account yet?"),
+              Text("آیا اکانت دارید؟",
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodyMedium!
+                      .copyWith(fontSize: 15)),
               TextButton(
                   onPressed: () {
                     setState(() {
@@ -208,30 +250,35 @@ class _LoginSignUpState extends State<LoginSignUp> {
                     });
                   },
                   child: Text(
-                    "register now",
+                    "ثبت نام کنید",
                     style: Theme.of(context)
                         .textTheme
                         .bodyMedium!
-                        .copyWith(color: Colors.blueGrey),
+                        .copyWith(color: Colors.blueGrey, fontSize: 15),
                   ))
             ],
           ),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("Forgot your password?"),
+              Text(
+                "فراموشی پسورد؟",
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium!
+                    .copyWith(fontSize: 15),
+              ),
               TextButton(
                   onPressed: () {
-                    setState(() {
-                      isInSignUp = true;
-                    });
+                    FadePageRoute.navigateToNextPage(
+                        context, ForgotPasswordPage());
                   },
                   child: Text(
-                    "click here",
+                    "کلیک کنید",
                     style: Theme.of(context)
                         .textTheme
                         .bodyMedium!
-                        .copyWith(color: Colors.blueGrey),
+                        .copyWith(color: Colors.blueGrey, fontSize: 15),
                   ))
             ],
           ),
@@ -252,7 +299,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
                   backgroundColor: Colors.black26,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16))),
-              child: Text("Submit",
+              child: Text("تایید",
                   style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                       fontSize: 20,
                       fontWeight: FontWeight.w500,
@@ -281,7 +328,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
                 });
               },
               child: Text(
-                "Login",
+                "ورود",
                 style: Theme.of(context).textTheme.bodySmall!.copyWith(
                     fontWeight: FontWeight.bold,
                     fontSize: 32,
@@ -295,7 +342,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
                 });
               },
               child: Text(
-                "Sign up",
+                "ثبت نام",
                 style: Theme.of(context).textTheme.bodySmall!.copyWith(
                     fontWeight: FontWeight.bold,
                     fontSize: 32,
@@ -312,6 +359,9 @@ class _LoginSignUpState extends State<LoginSignUp> {
             controller: myController1,
             enableSuggestions: true,
             autocorrect: true,
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+            ],
             decoration: const InputDecoration(
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(16)),
@@ -320,12 +370,15 @@ class _LoginSignUpState extends State<LoginSignUp> {
                 contentPadding:
                     EdgeInsets.symmetric(vertical: 10.0, horizontal: 10),
                 filled: true,
-                label: Text('username')),
+                label: Text('نام کاربری')),
           ),
           const SizedBox(
             height: 20,
           ),
           TextField(
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+            ],
             controller: myController4,
             enableSuggestions: true,
             autocorrect: true,
@@ -337,12 +390,15 @@ class _LoginSignUpState extends State<LoginSignUp> {
                 contentPadding:
                     EdgeInsets.symmetric(vertical: 10.0, horizontal: 10),
                 filled: true,
-                label: Text('first name')),
+                label: Text('نام')),
           ),
           const SizedBox(
             height: 20,
           ),
           TextField(
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+            ],
             controller: myController5,
             enableSuggestions: true,
             autocorrect: true,
@@ -354,12 +410,15 @@ class _LoginSignUpState extends State<LoginSignUp> {
                 contentPadding:
                     EdgeInsets.symmetric(vertical: 10.0, horizontal: 10),
                 filled: true,
-                label: Text('last name')),
+                label: Text('نام خانوادگی')),
           ),
           const SizedBox(
             height: 20,
           ),
           TextField(
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+            ],
             controller: myController6,
             enableSuggestions: true,
             autocorrect: true,
@@ -371,12 +430,15 @@ class _LoginSignUpState extends State<LoginSignUp> {
                 contentPadding:
                     EdgeInsets.symmetric(vertical: 10.0, horizontal: 10),
                 filled: true,
-                label: Text('email')),
+                label: Text('ایمیل')),
           ),
           const SizedBox(
             height: 20,
           ),
           TextField(
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+            ],
             controller: myController2,
             enableSuggestions: false,
             autocorrect: false,
@@ -395,17 +457,20 @@ class _LoginSignUpState extends State<LoginSignUp> {
                         obscurity = !obscurity;
                       });
                     },
-                    child: Text(obscurity ? 'show' : 'hide',
+                    child: Text(obscurity ? 'نمایش' : 'پنهان',
                         style: Theme.of(context).textTheme.titleLarge!.copyWith(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
                             color: Colors.blueGrey))),
-                label: const Text('Password')),
+                label: const Text('پسورد')),
           ),
           const SizedBox(
             height: 20,
           ),
           TextField(
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9@._-]')),
+            ],
             controller: myController3,
             enableSuggestions: false,
             autocorrect: false,
@@ -424,12 +489,12 @@ class _LoginSignUpState extends State<LoginSignUp> {
                         obscurity = !obscurity;
                       });
                     },
-                    child: Text(obscurity ? 'show' : 'hide',
+                    child: Text(obscurity ? 'نمایش' : 'پنهان',
                         style: Theme.of(context).textTheme.titleLarge!.copyWith(
                             fontSize: 16,
                             fontWeight: FontWeight.w500,
                             color: Colors.blueGrey))),
-                label: const Text('Confirm Password')),
+                label: const Text('تایید پسورد')),
           ),
           const SizedBox(
             height: 30,
@@ -455,7 +520,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
                   backgroundColor: Colors.black26,
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16))),
-              child: Text("Submit",
+              child: Text("تایید",
                   style: Theme.of(context).textTheme.bodyLarge!.copyWith(
                       fontSize: 20,
                       fontWeight: FontWeight.w500,
