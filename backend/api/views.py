@@ -602,17 +602,17 @@ class RegisterView(generics.CreateAPIView):
             serializer.is_valid(raise_exception=True)
         except ValidationError as e:
             # print(e.detail)
-            response=e.detail
-            has_username_error=response.get('username')
-            has_email_error=response.get('email')
-            my_status=status.HTTP_400_BAD_REQUEST
-            if has_email_error and has_username_error:
-                my_status=status.HTTP_302_FOUND
-            elif has_username_error:
-                my_status=status.HTTP_303_SEE_OTHER
-            elif has_email_error:
-                my_status=status.HTTP_306_RESERVED
-            return Response(e.detail, status=my_status)
+            # response=e.detail
+            # has_username_error=response.get('username')
+            # has_email_error=response.get('email')
+            # my_status=status.HTTP_400_BAD_REQUEST
+            # if has_email_error and has_username_error:
+            #     my_status=status.HTTP_302_FOUND
+            # elif has_username_error:
+            #     my_status=status.HTTP_303_SEE_OTHER
+            # elif has_email_error:
+            #     my_status=status.HTTP_306_RESERVED
+            return Response(e.detail, status=status.HTTP_400_BAD_REQUEST)
 
         self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
