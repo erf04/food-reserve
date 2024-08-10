@@ -50,6 +50,7 @@ dependencies:
   flutter_dotenv: ^5.1.0
   flutter_screenutil: ^5.0.0+2
   http: ^1.2.1
+  flutter_native_splash: ^2.0.0+1
 
   flutter_localizations:
     sdk: flutter
@@ -118,3 +119,10 @@ flutter:
         weight: 700
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+
+flutter_native_splash:
+  color: "#ffffff" # Background color of the splash screen
+  image: assets/splash.jpg # Path to your logo image
+  android: true # Apply for Android
+  ios: true # Apply for iOS
+  web: true # Apply for Web

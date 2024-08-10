@@ -10,8 +10,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_native_splash/flutter_native_splash.dart';
+
 
 void main() async {
+  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   DateTime comparisonDate = DateTime(2024, 9, 20);
   DateTime today = DateTime.now();
   if (today.isBefore(comparisonDate)) {
@@ -24,9 +28,13 @@ void main() async {
     ]).then((_) {
       runApp(MyApp());
     });
+    FlutterNativeSplash.remove();
   }
-  print("test is over");
+  else{
+    print("test is over");
+  }
 }
+
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
