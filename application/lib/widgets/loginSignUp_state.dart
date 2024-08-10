@@ -43,6 +43,10 @@ class _LoginSignUpState extends State<LoginSignUp> {
   bool isInError = false;
   bool isInSignUp = false;
   bool obscurity = true;
+  String? emailError = null;
+  String? userNameError = null;
+  String? passwordError = null;
+  String? notALike = null;
   TextEditingController myController1 = TextEditingController();
   TextEditingController myController2 = TextEditingController();
   TextEditingController myController3 = TextEditingController();
@@ -76,6 +80,10 @@ class _LoginSignUpState extends State<LoginSignUp> {
       response =
           await HttpClient.instance.post('http://10.0.2.2:8000/api/register/',
               options: Options(
+                followRedirects: false,
+                validateStatus: (status) {
+                  return status! < 500;
+                },
                 headers: <String, String>{'App-Token': dotenv.env['API_KEY']!},
               ),
               data: {
@@ -84,19 +92,19 @@ class _LoginSignUpState extends State<LoginSignUp> {
             'first_name': firstName,
             'last_name': lastName,
             'email': email
-          }).catchError((onError) {
-        print('eybaba');
-        me = onError;
-      });
+          });
       if (response.statusCode == 201) {
         getAuthLogin(myUser, myPass, context);
         return null;
-      } else if (response.statusCode == 400) {
-        return me;
       }
-    } catch (e) {
-      print(me);
-    }
+      if (response.statusCode == 400) {
+        setState(() {
+          this.emailError = response.data?['email'];
+          this.userNameError = response.data?['username'];
+          this.passwordError = response.data?['password'];
+        });
+      }
+    } catch (e) {}
   }
 
   @override
@@ -110,8 +118,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
           decoration: const BoxDecoration(
             image: DecorationImage(
               image: AssetImage('assets/new4.jpg'),
-              fit: BoxFit
-                  .cover, // This ensures the image covers the entire background
+              fit: BoxFit.cover,
             ),
           ),
         ),
@@ -309,10 +316,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
 
   Widget getSignUp(BuildContext context) {
     bool notEqualError = false;
-    String? emailError = null;
-    String? userNameError = null;
-    String? passwordError = null;
-    String? notALike = null;
+
     return SingleChildScrollView(
       physics: BouncingScrollPhysics(),
       child: Column(
@@ -516,21 +520,13 @@ class _LoginSignUpState extends State<LoginSignUp> {
                     setState(() {
                       notALike = null;
                     });
-                    var newMessage = await getAuthSignUp(
+                    await getAuthSignUp(
                         myController1.text,
                         myController2.text,
                         myController4.text,
                         myController5.text,
                         myController6.text,
                         context);
-                    print(newMessage);
-                    if (newMessage != null) {
-                      setState(() {
-                        emailError = newMessage!['email'];
-                        userNameError = newMessage!['username'];
-                        passwordError = newMessage!['password'];
-                      });
-                    }
                   } else {
                     setState(() {
                       notALike = 'پسورد های وارد شده یکی نیستند';
