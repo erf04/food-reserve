@@ -39,12 +39,12 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate_username(self, value):
         if User.objects.filter(username=value).exists():
-            raise serializers.ValidationError('یوزرنیم تکراری است')
+            raise serializers.ValidationError('نام کاربری تکراری است')
         return value
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("ایمیل تکراری میباشد")
+            raise serializers.ValidationError("ایمیل تکراری است")
         return value
 
     def validate_password(self, value):
