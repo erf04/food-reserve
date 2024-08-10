@@ -19,6 +19,18 @@ class UserSerializer(serializers.ModelSerializer):
 
 class RegisterSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
+    email = serializers.EmailField(
+        error_messages={
+            'invalid': 'یک ایمیل معتبر وارد کنید',
+            'unique':'ایمیل وارد شده قبلاً استفاده شده است'
+        }
+    )
+    username=serializers.CharField(
+        error_messages={
+            'unique':'یوزرنیم تکراری است',
+            # 'invalid':'یوزرنیم تکراری است' 
+        }
+    )
 
     class Meta:
         model = User
@@ -27,19 +39,19 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def validate_username(self, value):
         if User.objects.filter(username=value).exists():
-            raise serializers.ValidationError("Username is already taken.")
+            raise serializers.ValidationError('یوزرنیم تکراری است')
         return value
 
     def validate_email(self, value):
         if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("Email is already taken.")
+            raise serializers.ValidationError("ایمیل تکراری میباشد")
         return value
 
     def validate_password(self, value):
         if len(value) < 8:
-            raise serializers.ValidationError("Password must be at least 8 characters long.")
+            raise serializers.ValidationError("پسورد باید حداقل 8 کاراکتر باشد")
         if not any(char.isdigit() for char in value):
-            raise serializers.ValidationError("Password must contain at least one digit.")
+            raise serializers.ValidationError("پسورد باید حداقل یک عدد داشته باشد")
         return value
 
     def create(self, validated_data):
