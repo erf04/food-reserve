@@ -99,9 +99,9 @@ class _LoginSignUpState extends State<LoginSignUp> {
       }
       if (response.statusCode == 400) {
         setState(() {
-          this.emailError = response.data?['email'];
-          this.userNameError = response.data?['username'];
-          this.passwordError = response.data?['password'];
+          this.emailError = response.data?['email'][0];
+          this.userNameError = response.data?['username'][0];
+          this.passwordError = response.data?['password'][0];
         });
       }
     } catch (e) {}
