@@ -28,7 +28,7 @@ void main() async {
     ]).then((_) {
       runApp(MyApp());
     });
-    FlutterNativeSplash.remove();
+    //FlutterNativeSplash.remove();
   }
   else{
     print("test is over");

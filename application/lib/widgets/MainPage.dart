@@ -162,7 +162,7 @@ class _MainPageState extends State<MainPage> {
                             child: Container(
                               child: CachedNetworkImage(
                                   imageUrl:
-                                      'https://reserve.chbk.run${snapshot.data?.profilePhoto}',
+                                      'https://reserve-backend.chbk.run${snapshot.data?.profilePhoto}',
                                   placeholder: (context, url) => const Center(
                                       child: CircularProgressIndicator()),
                                   errorWidget: (context, url, error) =>
@@ -177,7 +177,7 @@ class _MainPageState extends State<MainPage> {
                     } else if (snapshot.connectionState ==
                         ConnectionState.waiting) {
                       return Center(
-                        child: CircularProgressIndicator(),
+                        child: SizedBox(),
                       );
                     } else {
                       return IconButton(
@@ -546,7 +546,7 @@ class _MainPageState extends State<MainPage> {
                                     } else {
                                       return Center(
                                         child: Text(
-                                          " NO DATA",
+                                          " ",
                                           style: Theme.of(context)
                                               .textTheme
                                               .bodyLarge!
@@ -560,7 +560,7 @@ class _MainPageState extends State<MainPage> {
                       );
                     } else {
                       return Center(
-                          child: Text("NO DATA",
+                          child: Text(" ",
                               style: Theme.of(context)
                                   .textTheme
                                   .bodyLarge!

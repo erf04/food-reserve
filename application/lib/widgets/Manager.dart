@@ -161,7 +161,7 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
                           child: Container(
                             child: CachedNetworkImage(
                                 imageUrl:
-                                    'https://reserve.chbk.run${snapshot.data?.profilePhoto}',
+                                    'https://reserve-backend.chbk.run${snapshot.data?.profilePhoto}',
                                 placeholder: (context, url) => const Center(
                                     child: CircularProgressIndicator()),
                                 errorWidget: (context, url, error) =>
@@ -175,7 +175,7 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
                     );
                   } else if (snapshot.connectionState == ConnectionState.waiting) {
                     return Center(
-                      child: CircularProgressIndicator(),
+                      child: SizedBox(),
                     );
                   } else {
                     return IconButton(

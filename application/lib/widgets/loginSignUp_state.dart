@@ -38,11 +38,11 @@ class LoginSignUp extends StatefulWidget {
 }
 
 class _LoginSignUpState extends State<LoginSignUp> {
-  bool loginError = false;
   bool signUpError = false;
   bool isInError = false;
   bool isInSignUp = false;
   bool obscurity = true;
+  String? loginError = null;
   String? emailError = null;
   String? userNameError = null;
   String? passwordError = null;
@@ -54,13 +54,25 @@ class _LoginSignUpState extends State<LoginSignUp> {
   TextEditingController myController5 = TextEditingController();
   TextEditingController myController6 = TextEditingController();
   Future<void> getAuthLogin(String myUser, String myPass, context) async {
-    final response = await HttpClient.instance.post('api/login/',
-        data: {'username': myUser, 'password': myPass}).then((response) {
-      TokenManager.saveTokens(
-          response.data["access"], response.data["refresh"]);
-      FadePageRoute.navigateToNextPage(context, MainPage());
-      print(response.data);
-    });
+    try {
+      final response = await HttpClient.instance.post('api/login/',
+          options: Options(
+            followRedirects: false,
+            validateStatus: (status) {
+              return status! < 500;
+            },
+          ),
+          data: {'username': myUser, 'password': myPass}).then((response) {
+        TokenManager.saveTokens(
+            response.data["access"], response.data["refresh"]);
+        FadePageRoute.navigateToNextPage(context, MainPage());
+        //print(response.data);
+      });
+    } catch (e) {
+        setState(() {
+          loginError = 'اطلاعات وارد شده معتبر نیست';
+        });
+    }
   }
 
   Future<Map<String, dynamic>?> getAuthSignUp(
@@ -77,16 +89,15 @@ class _LoginSignUpState extends State<LoginSignUp> {
     final response;
     var me;
     try {
-      response =
-          await HttpClient.instance.post('http://10.0.2.2:8000/api/register/',
-              options: Options(
-                followRedirects: false,
-                validateStatus: (status) {
-                  return status! < 500;
-                },
-                headers: <String, String>{'App-Token': dotenv.env['API_KEY']!},
-              ),
-              data: {
+      response = await HttpClient.instance.post('api/register/',
+          options: Options(
+            followRedirects: false,
+            validateStatus: (status) {
+              return status! < 500;
+            },
+            headers: <String, String>{'App-Token': dotenv.env['API_KEY']!},
+          ),
+          data: {
             'username': myUser,
             'password': myPass,
             'first_name': firstName,
@@ -217,6 +228,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
             autocorrect: false,
             obscureText: obscurity,
             decoration: InputDecoration(
+                errorText: loginError,
                 border: const OutlineInputBorder(
                   borderRadius: BorderRadius.all(Radius.circular(16)),
                 ),
@@ -293,11 +305,6 @@ class _LoginSignUpState extends State<LoginSignUp> {
           ElevatedButton(
               onPressed: () {
                 getAuthLogin(myController1.text, myController2.text, context);
-                setState(() {
-                  Future.delayed(const Duration(milliseconds: 1500), () {
-                    loginError = true;
-                  });
-                });
               },
               style: ElevatedButton.styleFrom(
                   minimumSize: Size(MediaQuery.of(context).size.width, 50),

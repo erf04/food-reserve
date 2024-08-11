@@ -58,7 +58,7 @@ class _ProfileState extends State<Profile> {
               options: Options(headers: {"Authorization": "JWT $myAccess"}),
               data: formData)
           .then((onValue) {
-        print("Success");
+        //print("Success");
         FadePageRoute.navigateToNextPage(context, Profile());
       }).catchError((onError) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -276,7 +276,7 @@ class _ProfileState extends State<Profile> {
                                 child: Container(
                                   child: CachedNetworkImage(
                                       imageUrl:
-                                          'https://reserve.chbk.run${snapshot.data?.profilePhoto}',
+                                          'https://reserve-backend.chbk.run${snapshot.data?.profilePhoto}',
                                       placeholder: (context, url) => const Center(
                                           child: Center(
                                               child:
@@ -556,7 +556,7 @@ class _ProfileState extends State<Profile> {
                         child: Container(
                           child: CachedNetworkImage(
                               imageUrl:
-                                  'https://reserve.chbk.run${snapshot.data?.profilePhoto}',
+                                  'https://reserve-backend.chbk.run${snapshot.data?.profilePhoto}',
                               placeholder: (context, url) => const Center(
                                   child: Center(
                                       child: CircularProgressIndicator())),
@@ -572,7 +572,7 @@ class _ProfileState extends State<Profile> {
                 } else if (snapshot.connectionState ==
                     ConnectionState.waiting) {
                   return Center(
-                    child: Center(child: CircularProgressIndicator()),
+                    child: Center(child: SizedBox()),
                   );
                 } else {
                   return IconButton(
@@ -655,7 +655,7 @@ class _ReserveHistoryState extends State<ReserveHistory> {
                           child: const Padding(
                             padding: const EdgeInsets.all(12.0),
                             child: Center(
-                              child: Text("No history available!"),
+                              child: Text("تاریخچه ی شما خالی است !"),
                             ),
                           ),
                         );
