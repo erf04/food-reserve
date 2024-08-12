@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
-
+import 'package:permission_handler/permission_handler.dart';
 import 'package:application/design/food.dart';
 import 'package:application/design/meal.dart';
 import 'package:application/design/reserve.dart';
@@ -44,6 +44,7 @@ class _ProfileState extends State<Profile> {
           "email": email,
           "username": userName
         });
+        
       } else {
         formData = FormData.fromMap({
           "first_name": firstName,
@@ -59,12 +60,25 @@ class _ProfileState extends State<Profile> {
               data: formData)
           .then((onValue) {
         //print("Success");
-        FadePageRoute.navigateToNextPage(context, Profile());
+        if(profileImage == null){
+          Navigator.pop(context);
+        }
       }).catchError((onError) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('اطلاعات وارد شده قابل قبول نیست !')),
         );
       });
+    }
+  }
+
+  Future<void> _requestPermission(Permission permission) async {
+    final status = await permission.request();
+    if (status == PermissionStatus.granted) {
+      print('Permission granted');
+    } else if (status == PermissionStatus.denied) {
+      print('Permission denied');
+    } else if (status == PermissionStatus.permanentlyDenied) {
+      openAppSettings();
     }
   }
 
@@ -84,7 +98,7 @@ class _ProfileState extends State<Profile> {
           actions: <Widget>[
             TextButton(
               onPressed: () {
-                FadePageRoute.navigateToNextPage(context, Profile());
+                Navigator.pop(context);
               },
               child: Text('بازگشت'),
             ),
@@ -117,12 +131,12 @@ class _ProfileState extends State<Profile> {
           actions: <Widget>[
             TextButton(
               onPressed: () {
-                FadePageRoute.navigateToNextPage(context, Profile());
+                Navigator.pop(context);
               },
               child: Text('بازگشت'),
             ),
             TextButton(
-              onPressed: () {               
+              onPressed: () {
                 changeInfo(myUser.firstName, myUser.lastName, controller2.text,
                     myUser.userName, null);
               },
@@ -216,7 +230,7 @@ class _ProfileState extends State<Profile> {
             : myAppBar(context, 'کاربر', false),
         body: isInHistory ? const ReserveHistory() : getNormalProfileWidget());
   }
-
+  bool _isUpdatingImage = false;
   final ImagePicker _picker = ImagePicker();
   bool isInChangePassword = false;
   bool isInChangeUsername = false;
@@ -224,10 +238,22 @@ class _ProfileState extends State<Profile> {
   TextEditingController controller2 = TextEditingController();
 
   Future<void> _pickImage(ImageSource source, User myUser) async {
+    await _requestPermission(Permission.camera);
+    await _requestPermission(Permission.photos);
+    
     XFile? imagePickerThis = await _picker.pickImage(source: source);
     File image = File(imagePickerThis!.path);
-    changeInfo(myUser.firstName, myUser.lastName, myUser.email, myUser.userName,
+
+    setState(() {
+      _isUpdatingImage = true;
+    });
+
+    await changeInfo(myUser.firstName, myUser.lastName, myUser.email, myUser.userName,
         image);
+
+    setState(() {
+      _isUpdatingImage = false;
+    });
   }
 
   Widget getNormalProfileWidget() {
@@ -272,7 +298,9 @@ class _ProfileState extends State<Profile> {
                             CircleAvatar(
                               backgroundColor: Colors.deepOrange,
                               radius: 80,
-                              child: ClipOval(
+                              child: _isUpdatingImage
+          ? CircularProgressIndicator(): 
+                              ClipOval(
                                 child: Container(
                                   child: CachedNetworkImage(
                                       imageUrl:
@@ -517,9 +545,8 @@ class _ProfileState extends State<Profile> {
                 this.isInHistory = false;
               });
             } else {
-              FadePageRoute.navigateToNextPage(context, MainPage());
+              Navigator.pop(context);
             }
-            //Navigator.pushReplacement(context, MyHomePage(title: ''));
           },
           icon: const Icon(
             CupertinoIcons.back,
@@ -546,9 +573,7 @@ class _ProfileState extends State<Profile> {
               builder: (context, snapshot) {
                 if (snapshot.hasData) {
                   return InkWell(
-                    onTap: () {
-                      FadePageRoute.navigateToNextPage(context, Profile());
-                    },
+                    onTap: () {},
                     child: CircleAvatar(
                       backgroundColor: Colors.deepOrange,
                       radius: 20,
@@ -576,9 +601,7 @@ class _ProfileState extends State<Profile> {
                   );
                 } else {
                   return IconButton(
-                      onPressed: () {
-                        FadePageRoute.navigateToNextPage(context, Profile());
-                      },
+                      onPressed: () {},
                       icon: Icon(CupertinoIcons.profile_circled));
                 }
               }),
@@ -644,7 +667,9 @@ class _ReserveHistoryState extends State<ReserveHistory> {
                         ConnectionState.waiting) {
                       return Column(
                         children: [
-                          SizedBox(height: 60,),
+                          SizedBox(
+                            height: 60,
+                          ),
                           Center(child: const CircularProgressIndicator()),
                         ],
                       );

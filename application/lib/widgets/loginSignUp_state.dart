@@ -65,7 +65,7 @@ class _LoginSignUpState extends State<LoginSignUp> {
           data: {'username': myUser, 'password': myPass}).then((response) {
         TokenManager.saveTokens(
             response.data["access"], response.data["refresh"]);
-        FadePageRoute.navigateToNextPage(context, MainPage());
+        FadePageRoute.navigateToNextPageReplace(context, MainPage());
         //print(response.data);
       });
     } catch (e) {

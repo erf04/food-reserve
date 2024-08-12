@@ -54,7 +54,7 @@ class _MealCreationPageState extends State<MealCreationPage> {
       String? myAccess = await TokenManager.getAccessToken();
       final response = await HttpClient.instance.get('api/shiftmeal/create/',
           options: Options(headers: {'Authorization': 'JWT $myAccess'}));
-      
+
       if (response.statusCode == 200) {
         setState(() {
           for (var i in response.data['meals']) {
@@ -98,7 +98,7 @@ class _MealCreationPageState extends State<MealCreationPage> {
     VerifyToken? myVerify = await TokenManager.verifyAccess(context);
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
-      
+
       final response = await HttpClient.instance.get("api/profile/",
           options: Options(headers: {"Authorization": "JWT $myAccess"}));
       User myUser = User.fromJson(response.data);
@@ -111,7 +111,7 @@ class _MealCreationPageState extends State<MealCreationPage> {
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
       selectedDate = selectedDate!.replaceAll('/', '-');
-      
+
       final response = await HttpClient.instance.post(
         'api/shiftmeal/filter/',
         options: Options(headers: {'Authorization': 'JWT $myAccess'}),
@@ -147,7 +147,7 @@ class _MealCreationPageState extends State<MealCreationPage> {
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
       selectedDate = selectedDate!.replaceAll('/', '-');
-      
+
       List<int> mealId = [];
       for (var i in selectedMeals) {
         mealId.add(i!.id);
@@ -209,7 +209,6 @@ class _MealCreationPageState extends State<MealCreationPage> {
                 setState(() {
                   selectedMeals.add(selectedMeal);
                   this.selectedMeals.add(selectedMeal);
-                  
                 });
               }
             },
@@ -300,19 +299,18 @@ class _MealCreationPageState extends State<MealCreationPage> {
       appBar: AppBar(
         leadingWidth: 110,
         leading: IconButton(
-                onPressed: () {
-                  FadePageRoute.navigateToNextPage(context, MainPage());
-                },
-                icon: const Icon(
-                  CupertinoIcons.back,
-                  size: 40,
-                  color: Color.fromARGB(255, 2, 16, 43),
-                )),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: const Icon(
+              CupertinoIcons.back,
+              size: 40,
+              color: Color.fromARGB(255, 2, 16, 43),
+            )),
         foregroundColor: Colors.white,
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
           children: [
-            
             Text(
               'ایجاد وعده',
               style: Theme.of(context)
@@ -320,52 +318,55 @@ class _MealCreationPageState extends State<MealCreationPage> {
                   .bodyMedium!
                   .copyWith(fontSize: 25, fontWeight: FontWeight.bold),
             ),
-            
           ],
         ),
         actions: [
-          SizedBox(width: 20,),
+          SizedBox(
+            width: 20,
+          ),
           FutureBuilder<User?>(
-                future: getProfileForMainPage(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return InkWell(
-                      onTap: () {
-                        FadePageRoute.navigateToNextPage(context, Profile());
-                      },
-                      child: CircleAvatar(
-                        backgroundColor: Colors.deepOrange,
-                        radius: 20,
-                        child: ClipOval(
-                          child: Container(
-                            child: CachedNetworkImage(
-                                imageUrl:
-                                    'https://reserve-backend.chbk.run${snapshot.data?.profilePhoto}',
-                                placeholder: (context, url) => const Center(
-                                    child: CircularProgressIndicator()),
-                                errorWidget: (context, url, error) =>
-                                    Center(child: Icon(Icons.error)),
-                                fit: BoxFit.cover,
-                                width: 40,
-                                height: 40),
-                          ),
+              future: getProfileForMainPage(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return InkWell(
+                    onTap: () {
+                      FadePageRoute.navigateToNextPage(context, Profile());
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.deepOrange,
+                      radius: 20,
+                      child: ClipOval(
+                        child: Container(
+                          child: CachedNetworkImage(
+                              imageUrl:
+                                  'https://reserve-backend.chbk.run${snapshot.data?.profilePhoto}',
+                              placeholder: (context, url) => const Center(
+                                  child: CircularProgressIndicator()),
+                              errorWidget: (context, url, error) =>
+                                  Center(child: Icon(Icons.error)),
+                              fit: BoxFit.cover,
+                              width: 40,
+                              height: 40),
                         ),
                       ),
-                    );
-                  } else if (snapshot.connectionState ==
-                      ConnectionState.waiting) {
-                    return Center(
-                      child: SizedBox(),
-                    );
-                  } else {
-                    return IconButton(
-                        onPressed: () {
-                          FadePageRoute.navigateToNextPage(context, Profile());
-                        },
-                        icon: Icon(CupertinoIcons.profile_circled));
-                  }
-                }),
-                SizedBox(width: 50,)
+                    ),
+                  );
+                } else if (snapshot.connectionState ==
+                    ConnectionState.waiting) {
+                  return Center(
+                    child: SizedBox(),
+                  );
+                } else {
+                  return IconButton(
+                      onPressed: () {
+                        FadePageRoute.navigateToNextPage(context, Profile());
+                      },
+                      icon: Icon(CupertinoIcons.profile_circled));
+                }
+              }),
+          SizedBox(
+            width: 50,
+          )
         ],
         backgroundColor: Colors.white,
       ),
@@ -547,7 +548,6 @@ class _MealCreationPageState extends State<MealCreationPage> {
                             EdgeInsets.symmetric(horizontal: 15, vertical: 15),
                       ),
                       onPressed: () async {
-                        
                         if (_selectedDate != null &&
                             (!selectedMeals.isEmpty) &&
                             selectedShift != null) {

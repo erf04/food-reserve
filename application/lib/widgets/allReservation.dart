@@ -122,16 +122,16 @@ class _MealReservationsPageState extends State<MealReservationsPage> {
     return Scaffold(
       appBar: AppBar(
         foregroundColor: Colors.white,
-        leadingWidth:110 ,
+        leadingWidth: 110,
         leading: IconButton(
-                onPressed: () {
-                  FadePageRoute.navigateToNextPage(context, MainPage());
-                },
-                icon: const Icon(
-                  CupertinoIcons.back,
-                  size: 40,
-                  color: Color.fromARGB(255, 2, 16, 43),
-                )),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: const Icon(
+              CupertinoIcons.back,
+              size: 40,
+              color: Color.fromARGB(255, 2, 16, 43),
+            )),
         title: Text(
           'رزرو های روز',
           style: Theme.of(context)
@@ -140,48 +140,52 @@ class _MealReservationsPageState extends State<MealReservationsPage> {
               .copyWith(fontSize: 25, fontWeight: FontWeight.bold),
         ),
         actions: [
-          SizedBox(width: 10,),
+          SizedBox(
+            width: 10,
+          ),
           FutureBuilder<User?>(
-                future: getProfileForMainPage(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return InkWell(
-                      onTap: () {
-                        FadePageRoute.navigateToNextPage(context, Profile());
-                      },
-                      child: CircleAvatar(
-                        backgroundColor: Colors.deepOrange,
-                        radius: 20,
-                        child: ClipOval(
-                          child: Container(
-                            child: CachedNetworkImage(
-                                imageUrl:
-                                    'https://reserve-backend.chbk.run${snapshot.data?.profilePhoto}',
-                                placeholder: (context, url) => const Center(
-                                    child: CircularProgressIndicator()),
-                                errorWidget: (context, url, error) =>
-                                    Center(child: Icon(Icons.error)),
-                                fit: BoxFit.cover,
-                                width: 40,
-                                height: 40),
-                          ),
+              future: getProfileForMainPage(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return InkWell(
+                    onTap: () {
+                      FadePageRoute.navigateToNextPage(context, Profile());
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.deepOrange,
+                      radius: 20,
+                      child: ClipOval(
+                        child: Container(
+                          child: CachedNetworkImage(
+                              imageUrl:
+                                  'https://reserve-backend.chbk.run${snapshot.data?.profilePhoto}',
+                              placeholder: (context, url) => const Center(
+                                  child: CircularProgressIndicator()),
+                              errorWidget: (context, url, error) =>
+                                  Center(child: Icon(Icons.error)),
+                              fit: BoxFit.cover,
+                              width: 40,
+                              height: 40),
                         ),
                       ),
-                    );
-                  } else if (snapshot.connectionState ==
-                      ConnectionState.waiting) {
-                    return Center(
-                      child:SizedBox(),
-                    );
-                  } else {
-                    return IconButton(
-                        onPressed: () {
-                          FadePageRoute.navigateToNextPage(context, Profile());
-                        },
-                        icon: Icon(CupertinoIcons.profile_circled));
-                  }
-                }),
-                SizedBox(width: 50,)
+                    ),
+                  );
+                } else if (snapshot.connectionState ==
+                    ConnectionState.waiting) {
+                  return Center(
+                    child: SizedBox(),
+                  );
+                } else {
+                  return IconButton(
+                      onPressed: () {
+                        FadePageRoute.navigateToNextPage(context, Profile());
+                      },
+                      icon: Icon(CupertinoIcons.profile_circled));
+                }
+              }),
+          SizedBox(
+            width: 50,
+          )
         ],
         backgroundColor: Colors.white,
       ),
@@ -271,96 +275,102 @@ class _MealReservationsPageState extends State<MealReservationsPage> {
                     SizedBox(height: 16),
                   ]),
                   Expanded(
-                    child:
-                     showMeal ? 
-                     AlertDialog(
-                          title: Text(this.meal!.food.name),
-                          content: Text(
-                            "${meal!.diet != null ? meal!.diet!.name: emptyString}${meal!.desert!=null ? dashString + meal!.desert!.name : emptyString}${meal!.drink.isEmpty ? emptyString : '\n${meal!.drinkToString()}' }",
-                            style: Theme.of(context).textTheme.bodyLarge,
-                          ),
-                          actions: <Widget>[
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                TextButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      showMeal = false;
-                                      meal = null;
-                                    });
-                                  },
-                                  child: Text('ok'),
-                                ),
-                              ],
+                    child: showMeal
+                        ? AlertDialog(
+                            title: Text(this.meal!.food.name),
+                            content: Text(
+                              "${meal!.diet != null ? meal!.diet!.name : emptyString}${meal!.desert != null ? dashString + meal!.desert!.name : emptyString}${meal!.drink.isEmpty ? emptyString : '\n${meal!.drinkToString()}'}",
+                              style: Theme.of(context).textTheme.bodyLarge,
                             ),
-                          ],
-                        )
-                     : FutureBuilder<List<UserMeal>>(
-                        future: fetchReservations(),
-                        builder: (context, snapshot) {
-                          if (snapshot.hasData) {
-                            return SingleChildScrollView(
-                              child: DataTable(
-                                columns: [
-                                  DataColumn(label: Text('نام و نام خانوادگی')),
-                                  DataColumn(label: Text('ناهار')),
-                                  DataColumn(label: Text('شام')),
+                            actions: <Widget>[
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  TextButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        showMeal = false;
+                                        meal = null;
+                                      });
+                                    },
+                                    child: Text('ok'),
+                                  ),
                                 ],
-                                rows: snapshot.data!.map((reservation) {
-                                  return DataRow(
-                                    cells: [
-                                      DataCell(Text(reservation.user.firstName +
-                                          ' ' +
-                                          reservation.user.lastName)),
-                                      DataCell(InkWell(
-                                        onTap: () {
-                                          if (reservation.lunch != null) {
-                                            setState(() {
-                                              showMeal = true;
-                                              meal = reservation.lunch!.meal;
-                                            });
-                                          }
-                                        },
-                                        child: Text(reservation.lunch == null
-                                            ? ''
-                                            : reservation
-                                                .lunch!.meal.food.name),
-                                      )),
-                                      DataCell(InkWell(
-                                        onTap: () {
-                                          if (reservation.dinner != null) {
-                                            setState(() {
-                                              showMeal = true;
-                                              meal = reservation.dinner!.meal;
-                                            });
-                                          }
-                                        },
-                                        child: Text(reservation.dinner == null
-                                            ? ''
-                                            : reservation
-                                                .dinner!.meal.food.name),
-                                      )),
-                                    ],
-                                  );
-                                }).toList(),
                               ),
-                            );
-                          } else if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          } else if (snapshot.hasError) {
-                            return Center(
-                              child: Text(snapshot.error.toString()),
-                            );
-                          } else {
-                            return Center(
-                              child: Text('No data'),
-                            );
-                          }
-                        }),
+                            ],
+                          )
+                        : FutureBuilder<List<UserMeal>>(
+                            future: fetchReservations(),
+                            builder: (context, snapshot) {
+                              if (snapshot.hasData) {
+                                return SingleChildScrollView(
+                                  child: DataTable(
+                                    columns: [
+                                      DataColumn(
+                                          label: Text('نام و نام خانوادگی')),
+                                      DataColumn(label: Text('ناهار')),
+                                      DataColumn(label: Text('شام')),
+                                    ],
+                                    rows: snapshot.data!.map((reservation) {
+                                      return DataRow(
+                                        cells: [
+                                          DataCell(Text(
+                                              reservation.user.firstName +
+                                                  ' ' +
+                                                  reservation.user.lastName)),
+                                          DataCell(InkWell(
+                                            onTap: () {
+                                              if (reservation.lunch != null) {
+                                                setState(() {
+                                                  showMeal = true;
+                                                  meal =
+                                                      reservation.lunch!.meal;
+                                                });
+                                              }
+                                            },
+                                            child: Text(
+                                                reservation.lunch == null
+                                                    ? ''
+                                                    : reservation
+                                                        .lunch!.meal.food.name),
+                                          )),
+                                          DataCell(InkWell(
+                                            onTap: () {
+                                              if (reservation.dinner != null) {
+                                                setState(() {
+                                                  showMeal = true;
+                                                  meal =
+                                                      reservation.dinner!.meal;
+                                                });
+                                              }
+                                            },
+                                            child: Text(
+                                                reservation.dinner == null
+                                                    ? ''
+                                                    : reservation.dinner!.meal
+                                                        .food.name),
+                                          )),
+                                        ],
+                                      );
+                                    }).toList(),
+                                  ),
+                                );
+                              } else if (snapshot.connectionState ==
+                                  ConnectionState.waiting) {
+                                return Center(
+                                  child: CircularProgressIndicator(),
+                                );
+                              } else if (snapshot.hasError) {
+                                return Center(
+                                  child: Text(snapshot.error.toString()),
+                                );
+                              } else {
+                                return Center(
+                                  child: Text('No data'),
+                                );
+                              }
+                            }),
                   ),
                 ],
               ),

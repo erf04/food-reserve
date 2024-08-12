@@ -1,4 +1,5 @@
 import 'package:application/repository/sharedPreferences.dart';
+import 'package:application/repository/tokenManager.dart';
 import 'package:application/widgets/MainPage.dart';
 import 'package:application/widgets/loginSignUp_state.dart';
 import 'package:application/widgets/profile.dart';
@@ -14,32 +15,40 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 
 
 void main() async {
-  WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-  FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  DateTime comparisonDate = DateTime(2024, 9, 20);
-  DateTime today = DateTime.now();
-  if (today.isBefore(comparisonDate)) {
-    await dotenv.load(fileName: ".env");
-    WidgetsFlutterBinding.ensureInitialized();
-    await SharedPreferencesManager.instance.init();
-    SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]).then((_) {
-      runApp(MyApp());
-    });
-    //FlutterNativeSplash.remove();
-  }
-  else{
-    print("test is over");
-  }
+  WidgetsFlutterBinding.ensureInitialized();
+  await dotenv.load(fileName: ".env");
+  await SharedPreferencesManager.instance.init();
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]).then((_) {
+    runApp(MyApp());
+  });
 }
 
-
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  Widget? initialPage;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInitialPage();
+  }
+
+  Future<void> _loadInitialPage() async {
+    Widget page = await TokenManager.initialPage();
+    setState(() {
+      initialPage = page;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return ScreenUtilInit(
@@ -60,7 +69,7 @@ class MyApp extends StatelessWidget {
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
         ),
-        home: MainPage(),
+        home: initialPage ?? Scaffold(body: Center(child: CircularProgressIndicator())), // Show loading while waiting
       ),
     );
   }

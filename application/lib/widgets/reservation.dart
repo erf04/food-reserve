@@ -134,14 +134,14 @@ class _ReservePageState extends State<ReservePage> {
           foregroundColor: Colors.white,
           leadingWidth: 110,
           leading: IconButton(
-                  onPressed: () {
-                    FadePageRoute.navigateToNextPage(context, MainPage());
-                  },
-                  icon: const Icon(
-                    CupertinoIcons.back,
-                    size: 40,
-                    color: Color.fromARGB(255, 2, 16, 43),
-                  )),
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              icon: const Icon(
+                CupertinoIcons.back,
+                size: 40,
+                color: Color.fromARGB(255, 2, 16, 43),
+              )),
           title: Text(
             'صفحه ی رزرو',
             style: Theme.of(context)
@@ -150,49 +150,53 @@ class _ReservePageState extends State<ReservePage> {
                 .copyWith(fontSize: 25, fontWeight: FontWeight.bold),
           ),
           actions: [
-            SizedBox(width: 20,),
+            SizedBox(
+              width: 20,
+            ),
             FutureBuilder<User?>(
-                  future: getProfileForMainPage(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      return InkWell(
-                        onTap: () {
-                          FadePageRoute.navigateToNextPage(context, Profile());
-                        },
-                        child: CircleAvatar(
-                          backgroundColor: Colors.deepOrange,
-                          radius: 20,
-                          child: ClipOval(
-                            child: Container(
-                              child: CachedNetworkImage(
-                                  imageUrl:
-                                      'https://reserve-backend.chbk.run${snapshot.data?.profilePhoto}',
-                                  placeholder: (context, url) => const Center(
-                                      child: CircularProgressIndicator()),
-                                  errorWidget: (context, url, error) =>
-                                      Center(child: Icon(Icons.error)),
-                                  fit: BoxFit.cover,
-                                  width: 40,
-                                  height: 40),
-                            ),
+                future: getProfileForMainPage(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return InkWell(
+                      onTap: () {
+                        FadePageRoute.navigateToNextPage(context, Profile());
+                      },
+                      child: CircleAvatar(
+                        backgroundColor: Colors.deepOrange,
+                        radius: 20,
+                        child: ClipOval(
+                          child: Container(
+                            child: CachedNetworkImage(
+                                imageUrl:
+                                    'https://reserve-backend.chbk.run${snapshot.data?.profilePhoto}',
+                                placeholder: (context, url) => const Center(
+                                    child: CircularProgressIndicator()),
+                                errorWidget: (context, url, error) =>
+                                    Center(child: Icon(Icons.error)),
+                                fit: BoxFit.cover,
+                                width: 40,
+                                height: 40),
                           ),
                         ),
-                      );
-                    } else if (snapshot.connectionState ==
-                        ConnectionState.waiting) {
-                      return Center(
-                        child:SizedBox(),
-                      );
-                    } else {
-                      return IconButton(
-                          onPressed: () {
-                            FadePageRoute.navigateToNextPage(
-                                context, Profile());
-                          },
-                          icon: Icon(CupertinoIcons.profile_circled));
-                    }
-                  }),
-                  SizedBox(width: 50,)],
+                      ),
+                    );
+                  } else if (snapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    return Center(
+                      child: SizedBox(),
+                    );
+                  } else {
+                    return IconButton(
+                        onPressed: () {
+                          FadePageRoute.navigateToNextPage(context, Profile());
+                        },
+                        icon: Icon(CupertinoIcons.profile_circled));
+                  }
+                }),
+            SizedBox(
+              width: 50,
+            )
+          ],
           backgroundColor: Colors.white,
         ),
         body: SafeArea(
@@ -469,48 +473,46 @@ class _ReserveListState extends State<ReserveList> {
                   ],
                 ),
               )
-            : Expanded(
-                child: ListView.builder(
-                    itemCount: myList.length,
-                    itemBuilder: (context, index) {
-                      return Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: InkWell(
-                          onTap: () {
-                            setState(() {
-                              selectedIndex = index;
-                            });
-                          },
-                          child: Container(
-                            width: MediaQuery.of(context).size.width,
-                            height: selectedIndex == index
-                                ? MediaQuery.of(context).size.height * (2 / 5)
-                                : 75,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(16),
-                                color: const Color.fromARGB(255, 242, 200, 145),
-                                boxShadow: const [BoxShadow(blurRadius: 4)]),
-                            child: Padding(
-                              padding: selectedIndex == index
-                                  ? const EdgeInsets.all(32)
-                                  : const EdgeInsets.all(16.0),
-                              child: selectedIndex == index
-                                  ? _columnMethod(
-                                      myList!,
-                                      index,
-                                      context,
-                                    )
-                                  : _rowMethod(
-                                      myList!,
-                                      index,
-                                      context,
-                                    ),
-                            ),
-                          ),
+            : ListView.builder(
+                itemCount: myList.length,
+                itemBuilder: (context, index) {
+                  return Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: InkWell(
+                      onTap: () {
+                        setState(() {
+                          selectedIndex = index;
+                        });
+                      },
+                      child: Container(
+                        width: MediaQuery.of(context).size.width,
+                        height: selectedIndex == index
+                            ? MediaQuery.of(context).size.height * (2 / 5)
+                            : 75,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(16),
+                            color: const Color.fromARGB(255, 242, 200, 145),
+                            boxShadow: const [BoxShadow(blurRadius: 4)]),
+                        child: Padding(
+                          padding: selectedIndex == index
+                              ? const EdgeInsets.all(32)
+                              : const EdgeInsets.all(16.0),
+                          child: selectedIndex == index
+                              ? _columnMethod(
+                                  myList!,
+                                  index,
+                                  context,
+                                )
+                              : _rowMethod(
+                                  myList!,
+                                  index,
+                                  context,
+                                ),
                         ),
-                      );
-                    }),
-              );
+                      ),
+                    ),
+                  );
+                });
   }
 
   Column _columnMethod(
@@ -551,11 +553,13 @@ class _ReserveListState extends State<ReserveList> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  SizedBox(width: MediaQuery.of(context).size.width /9,),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width / 9,
+                  ),
                   Container(
                     padding: EdgeInsets.fromLTRB(
                         MediaQuery.of(context).size.width * 1 / 8, 0, 0, 0),
-                    width: MediaQuery.of(context).size.width * 5/8,
+                    width: MediaQuery.of(context).size.width * 5 / 8,
                     height: 30,
                     child: ListView.builder(
                         physics: const BouncingScrollPhysics(),
@@ -565,10 +569,13 @@ class _ReserveListState extends State<ReserveList> {
                           if (index1 == 0) {
                             String emptyString = 'نوشیدنی ها : ';
                             String myString = 'نوشیدنی موجود نمی باشد !';
-                            
+
                             return Container(
                                 margin: const EdgeInsets.fromLTRB(4, 2, 4, 2),
-                                child: Text(shiftMeal[index].meal.drink.length == 0 ? myString : emptyString,
+                                child: Text(
+                                    shiftMeal[index].meal.drink.length == 0
+                                        ? myString
+                                        : emptyString,
                                     style: Theme.of(context)
                                         .textTheme
                                         .titleLarge!
@@ -604,7 +611,6 @@ class _ReserveListState extends State<ReserveList> {
                           }
                         }),
                   ),
-                  
                 ],
               ),
 
@@ -641,8 +647,8 @@ class _ReserveListState extends State<ReserveList> {
               ElevatedButton(
                   onPressed: () async {
                     if (!shiftMeal[index].isReserved) {
-                      setState(() async {
-                        await reserveFood(shiftMeal[index].id);
+                      setState(() {
+                        reserveFood(shiftMeal[index].id);
                         for (var i in shiftMeal) {
                           if (i.isReserved &&
                               i.meal.dailyMeal ==

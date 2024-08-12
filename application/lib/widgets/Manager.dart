@@ -16,7 +16,8 @@ class SupervisorAssignmentPage extends StatefulWidget {
   const SupervisorAssignmentPage({super.key});
 
   @override
-  _SupervisorAssignmentPageState createState() => _SupervisorAssignmentPageState();
+  _SupervisorAssignmentPageState createState() =>
+      _SupervisorAssignmentPageState();
 }
 
 class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
@@ -76,7 +77,6 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
     final fromDateIso = fromDate!.toJalaliDateTime().substring(0, 10);
     final toDateIso = toDate!.toJalaliDateTime().substring(0, 10);
 
-
     VerifyToken? myVerify = await TokenManager.verifyAccess(context);
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
@@ -103,7 +103,7 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
     VerifyToken? myVerify = await TokenManager.verifyAccess(context);
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
-      
+
       final response = await HttpClient.instance.get("api/profile/",
           options: Options(headers: {"Authorization": "JWT $myAccess"}));
       User myUser = User.fromJson(response.data);
@@ -121,19 +121,18 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
         foregroundColor: Colors.white,
         leadingWidth: 90,
         leading: IconButton(
-              onPressed: () {
-                FadePageRoute.navigateToNextPage(context, MainPage());
-              },
-              icon: const Icon(
-                CupertinoIcons.back,
-                size: 40,
-                color: Color.fromARGB(255, 2, 16, 43),
-              ),
-            ),
+          onPressed: () {
+            Navigator.pop(context);
+          },
+          icon: const Icon(
+            CupertinoIcons.back,
+            size: 40,
+            color: Color.fromARGB(255, 2, 16, 43),
+          ),
+        ),
         title: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            
             Text(
               'صفحه سرپرست',
               style: Theme.of(context)
@@ -141,51 +140,55 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
                   .bodyMedium!
                   .copyWith(fontSize: 25, fontWeight: FontWeight.bold),
             ),
-            
           ],
         ),
         actions: [
-          SizedBox(width: 10,),
+          SizedBox(
+            width: 10,
+          ),
           FutureBuilder<User?>(
-                future: getProfileForMainPage(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return InkWell(
-                      onTap: () {
-                        FadePageRoute.navigateToNextPage(context, Profile());
-                      },
-                      child: CircleAvatar(
-                        backgroundColor: Colors.deepOrange,
-                        radius: 20,
-                        child: ClipOval(
-                          child: Container(
-                            child: CachedNetworkImage(
-                                imageUrl:
-                                    'https://reserve-backend.chbk.run${snapshot.data?.profilePhoto}',
-                                placeholder: (context, url) => const Center(
-                                    child: CircularProgressIndicator()),
-                                errorWidget: (context, url, error) =>
-                                    Center(child: Icon(Icons.error)),
-                                fit: BoxFit.cover,
-                                width: 40,
-                                height: 40),
-                          ),
+              future: getProfileForMainPage(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return InkWell(
+                    onTap: () {
+                      FadePageRoute.navigateToNextPage(context, Profile());
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.deepOrange,
+                      radius: 20,
+                      child: ClipOval(
+                        child: Container(
+                          child: CachedNetworkImage(
+                              imageUrl:
+                                  'https://reserve-backend.chbk.run${snapshot.data?.profilePhoto}',
+                              placeholder: (context, url) => const Center(
+                                  child: CircularProgressIndicator()),
+                              errorWidget: (context, url, error) =>
+                                  Center(child: Icon(Icons.error)),
+                              fit: BoxFit.cover,
+                              width: 40,
+                              height: 40),
                         ),
                       ),
-                    );
-                  } else if (snapshot.connectionState == ConnectionState.waiting) {
-                    return Center(
-                      child: SizedBox(),
-                    );
-                  } else {
-                    return IconButton(
-                        onPressed: () {
-                          FadePageRoute.navigateToNextPage(context, Profile());
-                        },
-                        icon: Icon(CupertinoIcons.profile_circled));
-                  }
-                }),
-                SizedBox(width: 50,)
+                    ),
+                  );
+                } else if (snapshot.connectionState ==
+                    ConnectionState.waiting) {
+                  return Center(
+                    child: SizedBox(),
+                  );
+                } else {
+                  return IconButton(
+                      onPressed: () {
+                        FadePageRoute.navigateToNextPage(context, Profile());
+                      },
+                      icon: Icon(CupertinoIcons.profile_circled));
+                }
+              }),
+          SizedBox(
+            width: 50,
+          )
         ],
         backgroundColor: Colors.white,
       ),
@@ -197,7 +200,8 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
               //color: Colors.white,
               image: DecorationImage(
                 image: AssetImage('assets/new4.jpg'),
-                fit: BoxFit.cover, // This ensures the image covers the entire background
+                fit: BoxFit
+                    .cover, // This ensures the image covers the entire background
               ),
             ),
             child: FutureBuilder<List<User>>(
@@ -212,7 +216,8 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
                 } else {
                   return Padding(
                     padding: EdgeInsets.symmetric(
-                        horizontal: screenWidth * 0.05, vertical: screenHeight * 0.02),
+                        horizontal: screenWidth * 0.05,
+                        vertical: screenHeight * 0.02),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -220,7 +225,14 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
                           height: screenHeight * 0.01,
                         ),
                         DropdownButtonFormField<User>(
-                          decoration: InputDecoration(label: Text('انتخاب ناظر', style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight:FontWeight.bold, fontSize: 18 ))),
+                          decoration: InputDecoration(
+                              label: Text('انتخاب ناظر',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge!
+                                      .copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18))),
                           items: snapshot.data!.map((User user) {
                             return DropdownMenuItem<User>(
                               value: user,
@@ -239,11 +251,20 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
                           children: [
                             Expanded(
                               child: TextFormField(
-                                decoration: InputDecoration(label: Text('تاریخ شروع', style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight:FontWeight.bold, fontSize: 18 ))),
+                                decoration: InputDecoration(
+                                    label: Text('تاریخ شروع',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge!
+                                            .copyWith(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 18))),
                                 readOnly: true,
                                 onTap: () => _selectDate(context, true),
                                 controller: TextEditingController(
-                                  text: fromDate != null ? fromDate!.formatCompactDate() : '',
+                                  text: fromDate != null
+                                      ? fromDate!.formatCompactDate()
+                                      : '',
                                 ),
                               ),
                             ),
@@ -258,11 +279,20 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
                           children: [
                             Expanded(
                               child: TextFormField(
-                                decoration: InputDecoration(label: Text('شروع پایان', style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight:FontWeight.bold, fontSize: 18 ))),
+                                decoration: InputDecoration(
+                                    label: Text('شروع پایان',
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodyLarge!
+                                            .copyWith(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 18))),
                                 readOnly: true,
                                 onTap: () => _selectDate(context, false),
                                 controller: TextEditingController(
-                                  text: toDate != null ? toDate!.formatCompactDate() : '',
+                                  text: toDate != null
+                                      ? toDate!.formatCompactDate()
+                                      : '',
                                 ),
                               ),
                             ),
@@ -279,7 +309,16 @@ class _SupervisorAssignmentPageState extends State<SupervisorAssignmentPage> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Center(child: Text('تایید اطلاعات', style: Theme.of(context).textTheme.bodyLarge!.copyWith(fontWeight:FontWeight.bold, fontSize: 20 ),)),
+                                Center(
+                                    child: Text(
+                                  'تایید اطلاعات',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge!
+                                      .copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 20),
+                                )),
                               ],
                             ),
                           ),

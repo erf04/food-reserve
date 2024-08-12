@@ -58,7 +58,7 @@ class _MealSelectionPageState extends State<MealSelectionPage> {
       String? myAccess = await TokenManager.getAccessToken();
       final response = await HttpClient.instance.get('api/meal/create/',
           options: Options(headers: {'Authorization': 'JWT $myAccess'}));
-      
+
       if (response.statusCode == 200) {
         setState(() {
           for (var i in response.data['foods']) {
@@ -90,7 +90,7 @@ class _MealSelectionPageState extends State<MealSelectionPage> {
     VerifyToken? myVerify = await TokenManager.verifyAccess(context);
     if (myVerify == VerifyToken.verified) {
       String? myAccess = await TokenManager.getAccessToken();
-      
+
       final response = await HttpClient.instance.get("api/profile/",
           options: Options(headers: {"Authorization": "JWT $myAccess"}));
       User myUser = User.fromJson(response.data);
@@ -151,14 +151,14 @@ class _MealSelectionPageState extends State<MealSelectionPage> {
       appBar: AppBar(
         leadingWidth: 90,
         leading: IconButton(
-                onPressed: () {
-                  FadePageRoute.navigateToNextPage(context, MealCreationPage());
-                },
-                icon: const Icon(
-                  CupertinoIcons.back,
-                  size: 40,
-                  color: Color.fromARGB(255, 2, 16, 43),
-                )),
+            onPressed: () {
+              Navigator.pop(context);
+            },
+            icon: const Icon(
+              CupertinoIcons.back,
+              size: 40,
+              color: Color.fromARGB(255, 2, 16, 43),
+            )),
         foregroundColor: Colors.white,
         title: Text(
           'ایجاد وعده جدید',
@@ -168,48 +168,49 @@ class _MealSelectionPageState extends State<MealSelectionPage> {
               .copyWith(fontSize: 25, fontWeight: FontWeight.bold),
         ),
         actions: [
-          
-           FutureBuilder<User?>(
-                future: getProfileForMainPage(),
-                builder: (context, snapshot) {
-                  if (snapshot.hasData) {
-                    return InkWell(
-                      onTap: () {
-                        FadePageRoute.navigateToNextPage(context, Profile());
-                      },
-                      child: CircleAvatar(
-                        backgroundColor: Colors.deepOrange,
-                        radius: 20,
-                        child: ClipOval(
-                          child: Container(
-                            child: CachedNetworkImage(
-                                imageUrl:
-                                    'https://reserve-backend.chbk.run${snapshot.data?.profilePhoto}',
-                                placeholder: (context, url) => const Center(
-                                    child: CircularProgressIndicator()),
-                                errorWidget: (context, url, error) =>
-                                    Center(child: Icon(Icons.error)),
-                                fit: BoxFit.cover,
-                                width: 40,
-                                height: 40),
-                          ),
+          FutureBuilder<User?>(
+              future: getProfileForMainPage(),
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return InkWell(
+                    onTap: () {
+                      FadePageRoute.navigateToNextPage(context, Profile());
+                    },
+                    child: CircleAvatar(
+                      backgroundColor: Colors.deepOrange,
+                      radius: 20,
+                      child: ClipOval(
+                        child: Container(
+                          child: CachedNetworkImage(
+                              imageUrl:
+                                  'https://reserve-backend.chbk.run${snapshot.data?.profilePhoto}',
+                              placeholder: (context, url) => const Center(
+                                  child: CircularProgressIndicator()),
+                              errorWidget: (context, url, error) =>
+                                  Center(child: Icon(Icons.error)),
+                              fit: BoxFit.cover,
+                              width: 40,
+                              height: 40),
                         ),
                       ),
-                    );
-                  } else if (snapshot.connectionState ==
-                      ConnectionState.waiting) {
-                    return Center(
-                      child: SizedBox(),
-                    );
-                  } else {
-                    return IconButton(
-                        onPressed: () {
-                          FadePageRoute.navigateToNextPage(context, Profile());
-                        },
-                        icon: Icon(CupertinoIcons.profile_circled));
-                  }
-                }),
-                SizedBox(width: 30,)
+                    ),
+                  );
+                } else if (snapshot.connectionState ==
+                    ConnectionState.waiting) {
+                  return Center(
+                    child: SizedBox(),
+                  );
+                } else {
+                  return IconButton(
+                      onPressed: () {
+                        FadePageRoute.navigateToNextPage(context, Profile());
+                      },
+                      icon: Icon(CupertinoIcons.profile_circled));
+                }
+              }),
+          SizedBox(
+            width: 30,
+          )
         ],
         backgroundColor: Colors.white,
       ),

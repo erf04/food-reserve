@@ -129,15 +129,14 @@ class _MainPageState extends State<MainPage> {
           foregroundColor: Colors.white,
           leadingWidth: 120,
           leading: IconButton(
-                  onPressed: () {
-                    FadePageRoute.navigateToNextPage(
-                        context, const LoginSignUp());
-                  },
-                  icon: const Icon(
-                    CupertinoIcons.back,
-                    size: 40,
-                    color: Color.fromARGB(255, 2, 16, 43),
-                  )),
+              onPressed: () {
+                FadePageRoute.navigateToNextPageReplace(context, const LoginSignUp());
+              },
+              icon: const Icon(
+                CupertinoIcons.back,
+                size: 40,
+                color: Color.fromARGB(255, 2, 16, 43),
+              )),
           title: Text(
             'صفحه اصلی',
             style: Theme.of(context)
@@ -146,49 +145,52 @@ class _MainPageState extends State<MainPage> {
                 .copyWith(fontSize: 25, fontWeight: FontWeight.bold),
           ),
           actions: [
-            SizedBox(width: 30,),
-                          FutureBuilder<User?>(
-                  future: getProfileForMainPage(),
-                  builder: (context, snapshot) {
-                    if (snapshot.hasData) {
-                      return InkWell(
-                        onTap: () {
-                          FadePageRoute.navigateToNextPage(context, Profile());
-                        },
-                        child: CircleAvatar(
-                          backgroundColor: Colors.deepOrange,
-                          radius: 20,
-                          child: ClipOval(
-                            child: Container(
-                              child: CachedNetworkImage(
-                                  imageUrl:
-                                      'https://reserve-backend.chbk.run${snapshot.data?.profilePhoto}',
-                                  placeholder: (context, url) => const Center(
-                                      child: CircularProgressIndicator()),
-                                  errorWidget: (context, url, error) =>
-                                      Center(child: Icon(Icons.error)),
-                                  fit: BoxFit.cover,
-                                  width: 40,
-                                  height: 40),
-                            ),
+            SizedBox(
+              width: 30,
+            ),
+            FutureBuilder<User?>(
+                future: getProfileForMainPage(),
+                builder: (context, snapshot) {
+                  if (snapshot.hasData) {
+                    return InkWell(
+                      onTap: () {
+                        FadePageRoute.navigateToNextPage(context, Profile());
+                      },
+                      child: CircleAvatar(
+                        backgroundColor: Colors.deepOrange,
+                        radius: 20,
+                        child: ClipOval(
+                          child: Container(
+                            child: CachedNetworkImage(
+                                imageUrl:
+                                    'https://reserve-backend.chbk.run${snapshot.data?.profilePhoto}',
+                                placeholder: (context, url) => const Center(
+                                    child: CircularProgressIndicator()),
+                                errorWidget: (context, url, error) =>
+                                    Center(child: Icon(Icons.error)),
+                                fit: BoxFit.cover,
+                                width: 40,
+                                height: 40),
                           ),
                         ),
-                      );
-                    } else if (snapshot.connectionState ==
-                        ConnectionState.waiting) {
-                      return Center(
-                        child: SizedBox(),
-                      );
-                    } else {
-                      return IconButton(
-                          onPressed: () {
-                            FadePageRoute.navigateToNextPage(
-                                context, Profile());
-                          },
-                          icon: Icon(CupertinoIcons.profile_circled));
-                    }
-                  }),
-                  SizedBox(width: 50,)
+                      ),
+                    );
+                  } else if (snapshot.connectionState ==
+                      ConnectionState.waiting) {
+                    return Center(
+                      child: SizedBox(),
+                    );
+                  } else {
+                    return IconButton(
+                        onPressed: () {
+                          FadePageRoute.navigateToNextPage(context, Profile());
+                        },
+                        icon: Icon(CupertinoIcons.profile_circled));
+                  }
+                }),
+            SizedBox(
+              width: 50,
+            )
           ],
           backgroundColor: Colors.white,
         ),
@@ -235,11 +237,8 @@ class _MainPageState extends State<MainPage> {
                                 TextButton(
                                   onPressed: () {
                                     setState(() {
-                                      Navigator.of(context)
-                                          .pushReplacement(CupertinoPageRoute(
-                                        builder: (context) =>
-                                            const LoginSignUp(),
-                                      ));
+                                      FadePageRoute.navigateToNextPageReplace(
+                                          context, LoginSignUp());
                                     });
                                   },
                                   child: Text('بازگشت'),
@@ -630,32 +629,38 @@ class _MainPageState extends State<MainPage> {
                         .titleLarge!
                         .copyWith(fontSize: 24, fontWeight: FontWeight.bold),
                   )),
-              Text(
-                  'غذا : ${reserves[index].shiftMeal.meal.food.name} ',
-                  style: Theme.of(context).textTheme.titleLarge!.copyWith(
-                      fontSize: 19, fontWeight: FontWeight.w300)),
-
+              Text('غذا : ${reserves[index].shiftMeal.meal.food.name} ',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleLarge!
+                      .copyWith(fontSize: 19, fontWeight: FontWeight.w300)),
               Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  SizedBox(width: MediaQuery.of(context).size.width /9,),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width / 9,
+                  ),
                   Container(
                     padding: EdgeInsets.fromLTRB(
                         MediaQuery.of(context).size.width * 1 / 8, 0, 0, 0),
-                    width: MediaQuery.of(context).size.width * 5/8,
+                    width: MediaQuery.of(context).size.width * 5 / 8,
                     height: 30,
                     child: ListView.builder(
                         physics: const BouncingScrollPhysics(),
-                        itemCount: reserves[index].shiftMeal.meal.drink.length + 1,
+                        itemCount:
+                            reserves[index].shiftMeal.meal.drink.length + 1,
                         scrollDirection: Axis.horizontal,
                         itemBuilder: (context, index1) {
                           if (index1 == 0) {
                             String emptyString = 'نوشیدنی ها : ';
                             String myString = 'نوشیدنی موجود نمی باشد !';
-                            
+
                             return Container(
                                 margin: const EdgeInsets.fromLTRB(4, 2, 4, 2),
-                                child: Text(reserves[index].shiftMeal.meal.drink.isEmpty ? myString : emptyString,
+                                child: Text(
+                                    reserves[index].shiftMeal.meal.drink.isEmpty
+                                        ? myString
+                                        : emptyString,
                                     style: Theme.of(context)
                                         .textTheme
                                         .titleLarge!
@@ -663,11 +668,13 @@ class _MainPageState extends State<MainPage> {
                                             fontSize: 19,
                                             fontWeight: FontWeight.w300)));
                           }
-                          if (index1 == reserves[index].shiftMeal.meal.drink.length) {
+                          if (index1 ==
+                              reserves[index].shiftMeal.meal.drink.length) {
                             return Container(
                                 margin: const EdgeInsets.fromLTRB(4, 2, 4, 2),
                                 child: Text(
-                                    reserves[index].shiftMeal
+                                    reserves[index]
+                                        .shiftMeal
                                         .meal
                                         .drink[index1 - 1]
                                         .name,
@@ -691,7 +698,6 @@ class _MainPageState extends State<MainPage> {
                           }
                         }),
                   ),
-                  
                 ],
               ),
               Text(
@@ -702,7 +708,6 @@ class _MainPageState extends State<MainPage> {
                       .textTheme
                       .titleLarge!
                       .copyWith(fontSize: 19, fontWeight: FontWeight.w300)),
-
               Text(
                   reserves[index].shiftMeal.meal.desert == null
                       ? 'دسر : دسر موجود نیست'

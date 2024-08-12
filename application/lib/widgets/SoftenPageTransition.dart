@@ -11,7 +11,19 @@ class FadePageRoute extends PageRouteBuilder {
         CupertinoPageRoute(builder: (context) => routedPage),
       );
     } else {
+      Navigator.of(context).push(
+        FadePageRoute(page: routedPage),
+      );
+    }
+  }
+
+  static void navigateToNextPageReplace(BuildContext context, Widget routedPage) {
+    if (Platform.isIOS) {
       Navigator.of(context).pushReplacement(
+        CupertinoPageRoute(builder: (context) => routedPage),
+      );
+    } else {
+      Navigator.of(context).pushReplacement (
         FadePageRoute(page: routedPage),
       );
     }

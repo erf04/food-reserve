@@ -102,7 +102,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                   children: [
                     IconButton(
                         onPressed: () {
-                          FadePageRoute.navigateToNextPage(
+                          FadePageRoute.navigateToNextPageReplace(
                               context, LoginSignUp());
                         },
                         icon: Icon(
@@ -132,7 +132,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                     onPressed: () {
                       setState(() {
                         success = false;
-                        FadePageRoute.navigateToNextPage(
+                        FadePageRoute.navigateToNextPageReplace(
                             context, LoginSignUp());
                       });
                     },

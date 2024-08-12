@@ -1,8 +1,8 @@
 import 'package:application/repository/HttpClient.dart';
 import 'package:application/repository/sharedPreferences.dart';
+import 'package:application/widgets/MainPage.dart';
 import 'package:application/widgets/loginSignUp_state.dart';
 import 'package:flutter/cupertino.dart';
-
 
 enum VerifyToken {
   expired,
@@ -11,12 +11,32 @@ enum VerifyToken {
 }
 
 class TokenManager {
+  static Future<Widget> initialPage() async {
+    String? myAccess = await TokenManager.getAccessToken();
+    if (myAccess == null) {
+      return const LoginSignUp();
+    }
+    try{
+    await HttpClient.instance
+        .post('auth/jwt/verify/', data: {'token': myAccess});
+    return MainPage();
+    }catch (e){ 
+      try{
+      await HttpClient.instance.post('auth/jwt/refresh/', data: {
+        "refresh": await TokenManager.getRefreshToken()});
+        return MainPage();
+      }
+      catch(e){
+        return LoginSignUp();
+      }
+    }
+  }
 
   static Future<VerifyToken?> verifyAccess(BuildContext context) async {
     String? myAccess = await TokenManager.getAccessToken();
     //print(myAccess);
     if (myAccess == null) {
-        return VerifyToken.loggedOut;
+      return VerifyToken.loggedOut;
     }
     return await HttpClient.instance
         .post('auth/jwt/verify/', data: {"token": myAccess}).then((response) {
@@ -44,7 +64,6 @@ class TokenManager {
       return response2;
     });
   }
-  
 
   static Future<void> saveTokens(
       String accessToken, String refreshToken) async {
@@ -75,5 +94,4 @@ class TokenManager {
     await SharedPreferencesManager.instance.remove('accessToken');
     await SharedPreferencesManager.instance.remove('refreshToken');
   }
-
 }
