@@ -154,7 +154,7 @@ class Meal(models.Model):
 
 
 class ShiftMeal(models.Model):
-    meal=models.ForeignKey(Meal,on_delete=models.CASCADE,verbose_name="وعده")
+    meal=models.ForeignKey(Meal,on_delete=models.CASCADE,verbose_name="وعده",related_name="shift_meals")
     date=jmodels.jDateField(verbose_name='تاریخ')
     shift=models.ForeignKey(Shift,on_delete=models.CASCADE,verbose_name="شیفت",related_name="shift_meals")
 

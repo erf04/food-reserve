@@ -33,6 +33,7 @@ from django.db.models import F
 from rest_framework.exceptions import ValidationError
 from django.db.models.functions import Lower
 from datetime import datetime
+from django.shortcuts import get_object_or_404
 
 
 def ISO_to_gregorian(date:str):
@@ -249,11 +250,19 @@ class ShiftMealAPIView(APIView):
         i=0
         try:
             # remove previous shiftmeals 
-            ShiftMeal.objects.filter(date=ISO_to_gregorian(date),shift__shift_name=shift_name).delete()
             shift=Shift.objects.get(shift_name=shift_name)
-            for i in range(len(meal_ids)):
-                meal=Meal.objects.get(pk=meal_ids[i])
-                shift_meal=ShiftMeal.objects.create(shift=shift,date=ISO_to_gregorian(date),meal=meal)
+            existing_shift_meals = ShiftMeal.objects.filter(shift=shift, date=ISO_to_gregorian(date))
+            existing_meal_ids = set(existing_shift_meals.values_list('meal_id', flat=True))
+            new_meal_ids = set(map(int, meal_ids))
+            meals_to_delete = existing_meal_ids - new_meal_ids
+            ShiftMeal.objects.filter(shift=shift, date=date, meal_id__in=meals_to_delete).delete()
+            meals_to_add = new_meal_ids - existing_meal_ids
+            for meal_id in meals_to_add:
+                 # Check if we have reached the limit of 4 ShiftMeals
+                 if existing_shift_meals.count() < 4:
+                    meal = get_object_or_404(Meal, id=meal_id)
+                    ShiftMeal.objects.create(meal=meal, shift=shift, date=date)
+                    existing_shift_meals = ShiftMeal.objects.filter(shift=shift, date=date)
             # serialized=ShiftMealSerializer(shift_meal,many=False,context={"request":request})
             return Response(status=status.HTTP_201_CREATED)
         except Meal.DoesNotExist:
